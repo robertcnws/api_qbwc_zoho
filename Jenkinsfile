@@ -43,7 +43,6 @@ pipeline {
 
                         // Iniciar servicios
                         sh 'docker-compose up -d nginx'
-                        sh 'docker-compose up -d django'
                     }
                 }
             }
