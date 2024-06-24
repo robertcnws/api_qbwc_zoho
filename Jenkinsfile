@@ -33,22 +33,11 @@ pipeline {
             }
         }
 
-        stage('Build and Push') {
-            steps {
-                script {
-                    docker.withRegistry('https://index.docker.io/v1/') {
-                        def app = docker.build("${DOCKER_REPO}:latest")
-                        app.push()
-                    }
-                }
-            }
-        }
-
         stage('Deploy') {
             steps {
                 script {
-                    docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS) {
-                        sh 'docker-compose up -d' 
+                    docker.withRegistry('https://index.docker.io/v1/') {
+                        sh 'docker-compose up -d --build' 
                     }
                 }
             }
