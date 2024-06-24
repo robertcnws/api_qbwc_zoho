@@ -12,6 +12,8 @@ services:
       - DJANGO_SETTINGS_MODULE=project_api.settings
     env_file:
       - ./project_api/.env
+    networks:
+      - api_qbwc_zoho_network
 
   nginx:
     image: nginx:latest
@@ -24,6 +26,8 @@ services:
       - ./nginx/certificates:/etc/nginx/certificates:ro
     depends_on:
       - django
+    networks:
+      - api_qbwc_zoho_network
 
   jenkins:
     build: 
@@ -39,6 +43,8 @@ services:
     environment:
       - JAVA_OPTS=-Duser.timezone=America/New_York  # Opcional: Configura la zona horaria
     restart: unless-stopped
+    networks:
+      - api_qbwc_zoho_network
 
   db:
     image: postgres:13.0
@@ -49,7 +55,13 @@ services:
       - POSTGRES_DB=mydatabase
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+    networks:
+      - api_qbwc_zoho_network
 
 volumes:
   postgres_data:
   jenkins_home:
+
+networks:
+  api_qbwc_zoho_network:
+    driver: bridge
