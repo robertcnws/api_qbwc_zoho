@@ -11,7 +11,7 @@ services:
     environment:
       - DJANGO_SETTINGS_MODULE=project_api.settings
     env_file:
-      - /project_api/.env
+      - ./project_api/.env
 
   nginx:
     image: nginx:latest
