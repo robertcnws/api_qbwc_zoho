@@ -37,6 +37,8 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry('https://index.docker.io/v1/') {
+                        sh 'docker-compose down -v --remove-orphans django'
+                        sh 'docker-compose down -v --remove-orphans nginx'
                         sh 'docker-compose up -d --build' 
                     }
                 }
