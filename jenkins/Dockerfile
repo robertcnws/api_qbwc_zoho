@@ -3,6 +3,7 @@ FROM jenkins/jenkins:lts
 
 # Instalar Docker dentro del contenedor de Jenkins
 USER root
+
 RUN apt-get update && \
     apt-get -y install apt-transport-https \
                        ca-certificates \
@@ -14,8 +15,17 @@ RUN apt-get update && \
     apt-get update && \
     apt-get -y install docker-ce-cli
 
+# Crea el grupo 'docker' si no existe
+RUN groupadd -g 1001 docker
+
 # Crear un usuario Jenkins y agregarlo al grupo Docker
 RUN usermod -aG docker jenkins
 
 # Cambiar al usuario Jenkins
 USER jenkins
+
+# Configura el directorio de trabajo
+WORKDIR /var/jenkins_home
+
+# Define el comando de inicio del contenedor
+CMD ["bash"]
