@@ -11,6 +11,7 @@ pipeline {
 
     environment {
         DOCKER_CREDENTIALS = credentials('docker-hub-credentials')
+        DOCKER_USER = 'robertcnws'
         DOCKER_REPO = 'robertcnws/api_qbwc_zoho'
 
     }
@@ -25,7 +26,7 @@ pipeline {
         stage('Build and Push') {
             steps {
                 script {
-                    docker.withRegistry('https://index.docker.io/v1/', "username:${DOCKER_CREDENTIALS}") {
+                    docker.withRegistry('https://index.docker.io/v1/', "${DOCKER_USER}:${DOCKER_CREDENTIALS}") {
                         def app = docker.build("${DOCKER_REPO}:latest")
                         app.push()
                     }
