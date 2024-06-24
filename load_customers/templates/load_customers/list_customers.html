@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listado de Clientes</title>
+    <!-- Carga de Bootstrap (opcional, si lo estás utilizando) -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Customer's List</h1>
+        <div class="form-group">
+            <a href="{% url 'load_customers:upload' %}" class="btn btn-warning btn-sm">Return to upload</a>
+        </div>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Estado Activo</th>
+                    <th>Cliente</th>
+                    <th>Balance</th>
+                    <th>Balance Total</th>
+                    <th>Compañía</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for customer in page_obj %}
+                <tr>
+                    <td>{{ customer.id }}</td>
+                    <td>{{ customer.active_status }}</td>
+                    <td>{{ customer.customer }}</td>
+                    <td>{{ customer.balance }}</td>
+                    <td>{{ customer.balance_total }}</td>
+                    <td>{{ customer.company }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="pagination">
+            <span class="step-links">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1" class="btn btn-primary btn-sm">&laquo; first</a>
+                    <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-primary btn-sm">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                </span>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}" class="btn btn-primary btn-sm">next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}" class="btn btn-primary btn-sm">last &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
+    </div>
+</body>
+</html>

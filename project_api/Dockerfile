@@ -1,0 +1,21 @@
+FROM python:3.12
+
+ENV PYTHONUNBUFFERED 1
+
+WORKDIR /app
+
+COPY requirements.txt /app/
+
+RUN pip install --upgrade pip
+# RUN pip freeze > requirements.txt
+RUN pip install gunicorn
+RUN pip install -r requirements.txt
+
+# Copy the current directory contents into the container
+COPY . /app/
+
+# Expose port 8000 for the Django application
+EXPOSE 8000
+
+# Run the Django server
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "project_api.wsgi:application"]

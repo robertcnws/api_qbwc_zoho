@@ -1,0 +1,53 @@
+from django.db import models
+
+class ZohoCustomer(models.Model):
+    id = models.AutoField(primary_key=True)
+    contact_id = models.CharField(max_length=50)
+    contact_name = models.CharField(max_length=255)
+    customer_name = models.CharField(max_length=255)
+    vendor_name = models.CharField(max_length=255)
+    company_name = models.CharField(max_length=255, blank=True)
+    website = models.CharField(max_length=255, blank=True)
+    language_code = models.CharField(max_length=10, blank=True)
+    language_code_formatted = models.CharField(max_length=10, blank=True)
+    contact_type = models.CharField(max_length=50)
+    contact_type_formatted = models.CharField(max_length=50)
+    status = models.CharField(max_length=50)
+    customer_sub_type = models.CharField(max_length=50)
+    source = models.CharField(max_length=50)
+    is_linked_with_zohocrm = models.BooleanField(default=False)
+    payment_terms = models.IntegerField()
+    payment_terms_label = models.CharField(max_length=50)
+    currency_id = models.CharField(max_length=50)
+    twitter = models.CharField(max_length=50, blank=True)
+    facebook = models.CharField(max_length=50, blank=True)
+    currency_code = models.CharField(max_length=10)
+    outstanding_receivable_amount = models.FloatField()
+    outstanding_receivable_amount_bcy = models.FloatField()
+    outstanding_payable_amount = models.FloatField()
+    outstanding_payable_amount_bcy = models.FloatField()
+    unused_credits_receivable_amount = models.FloatField()
+    unused_credits_receivable_amount_bcy = models.FloatField()
+    unused_credits_payable_amount = models.FloatField()
+    unused_credits_payable_amount_bcy = models.FloatField()
+    first_name = models.CharField(max_length=50)
+    last_name = models.CharField(max_length=50)
+    email = models.EmailField()
+    phone = models.CharField(max_length=20)
+    mobile = models.CharField(max_length=20, blank=True)
+    portal_status = models.CharField(max_length=50)
+    portal_status_formatted = models.CharField(max_length=50)
+    track_1099 = models.BooleanField(default=False)
+    created_time = models.DateTimeField()
+    created_time_formatted = models.CharField(max_length=50)
+    last_modified_time = models.DateTimeField()
+    last_modified_time_formatted = models.CharField(max_length=50)
+    ach_supported = models.BooleanField(default=False)
+    has_attachment = models.BooleanField(default=False)
+    
+    def save(self, *args, **kwargs):
+        if not (ZohoCustomer.objects.filter(contact_id=self.contact_id).exists() or ZohoCustomer.objects.filter(email=self.email).exists()):
+            super(ZohoCustomer, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return self.contact_name

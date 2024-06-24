@@ -1,0 +1,51 @@
+services:
+  django:
+    build:
+      context: ./project_api
+    container_name: project_api
+    volumes:
+      - .:/app
+      - ./nginx/gunicorn.conf.py:/etc/nginx/gunicorn.conf.py
+    ports:
+      - "8000:8000"
+    environment:
+      - DJANGO_SETTINGS_MODULE=project_api.settings
+    env_file:
+      - /project_api/.env
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx_server
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro  
+      - ./nginx/certificates:/etc/nginx/certificates:ro
+    depends_on:
+      - django
+
+  jenkins:
+    build: 
+      context: ./jenkins
+    container_name: jenkins_server
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  db:
+    image: postgres:13.0
+    container_name: postgres_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=mydatabase
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+
+volumes:
+  postgres_data:
+  jenkins_home:

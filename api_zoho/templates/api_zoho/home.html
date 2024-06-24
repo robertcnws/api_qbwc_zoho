@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>API Zoho Quick Books Integration</title>
+        <!-- Bootstrap CSS -->
+        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    </head>
+    <body>
+        <div class="container mt-5">
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <h1 class="mb-4">Zoho - QBWC Integration</h1>
+                    <a href="{% url 'load_customers:upload' %}" class="btn btn-primary btn-lg mb-2">Load Customers</a>
+                    <a href="#" class="btn btn-info btn-lg mb-2">Load Invoices</a>
+                    <a href="{% url 'api_zoho:zoho_api_settings' %}" class="btn btn-success btn-lg mb-2">From Zoho</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bootstrap JS, Popper.js, and jQuery -->
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    </body>
+</html>

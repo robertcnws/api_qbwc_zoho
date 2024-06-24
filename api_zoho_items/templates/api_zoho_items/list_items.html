@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Items List</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row" role="alert">
+            <div class="col-12 d-flex justify-content-between align-items-center mb-3">
+                <h1>Items List</h1>
+                <a href="{% url 'home' %}" class="btn btn-warning">Back</a>
+            </div>
+        </div>
+        
+        <table class="table table-bordered table-striped">
+            <thead class="thead-dark">
+                <tr>
+                    <th>No.</th>
+                    <th>ID</th>
+                    <th>Item ID</th>
+                    <th>Name</th>
+                    <th>Unit</th>
+                    <th>Status</th>
+                    <th>Source</th>
+                    <th>Rate</th>
+                    <th>Stock on Hand</th>
+                    <th>SKU</th>
+                    <th>Created Time</th>
+                    <th>Last Modified Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ item.id }}</td>
+                    <td>{{ item.item_id }}</td>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.unit }}</td>
+                    <td>{{ item.status }}</td>
+                    <td>{{ item.source }}</td>
+                    <td>{{ item.rate }}</td>
+                    <td>{{ item.stock_on_hand }}</td>
+                    <td>{{ item.sku }}</td>
+                    <td>{{ item.created_time }}</td>
+                    <td>{{ item.last_modified_time }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

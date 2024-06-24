@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Excel File</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    {% comment %} <link href="{% static 'css/styles.css' %}" rel="stylesheet"> {% endcomment %}
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="card">
+            <div class="card-header">
+                <h1 class="card-title">Upload Excel File for Customers</h1>
+            </div>
+            <div class="card-body" style="width:80%">
+                <form method="post" enctype="multipart/form-data" class="needs-validation" validate>
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="id_file">Choose File:</label>
+                        <input type="file" name="file" id="id_file" class="form-control-file" required>
+                        <div class="invalid-feedback">Choose a valid Excel file</div>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">Upload File</button>
+                        <a href="{% url 'load_customers:list_customers' %}" class="btn btn-success">List Customers</a>
+                        <a href="{% url 'home' %}" class="btn btn-warning">Back</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- Bootstrap JS and dependencies (optional but recommended) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
