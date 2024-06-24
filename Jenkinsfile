@@ -38,12 +38,12 @@ pipeline {
                 script {
                     docker.withRegistry('https://index.docker.io/v1/') {
                         // Detener servicios
-                        sh 'docker-compose down -v --remove-orphans django'
                         sh 'docker-compose down -v --remove-orphans nginx'
+                        sh 'docker-compose down -v --remove-orphans django'
 
                         // Iniciar servicios
-                        sh 'docker-compose up -d django'
                         sh 'docker-compose up -d nginx'
+                        sh 'docker-compose up -d django'
                     }
                 }
             }
