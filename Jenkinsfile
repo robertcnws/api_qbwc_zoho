@@ -11,6 +11,7 @@ pipeline {
 
     environment {
         DOCKER_CREDENTIALS = credentials('docker-hub-credentials')
+        DOCKER_REPO = 'robertcnws/api_qbwc_zoho'
 
     }
 
@@ -21,11 +22,22 @@ pipeline {
             }
         }
 
-        stage('Build and Deploy') {
+        stage('Build and Push') {
             steps {
                 script {
                     docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS) {
-                        sh 'docker-compose up -d'
+                        def app = docker.build("${DOCKER_REPO}:latest")
+                        app.push()
+                    }
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                script {
+                    docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS) {
+                        sh 'docker-compose up -d' 
                     }
                 }
             }
