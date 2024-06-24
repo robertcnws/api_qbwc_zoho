@@ -1,9 +1,17 @@
 # Dockerfile for Jenkins
 FROM jenkins/jenkins:lts
 
-# Instalar Docker dentro del contenedor de Jenkins
 USER root
 
+# Instala sudo
+RUN apt-get update && \
+    apt-get install -y sudo && \
+    rm -rf /var/lib/apt/lists/*
+
+# Agrega permisos de sudo para el usuario jenkins
+RUN echo "jenkins ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+
+# Instalar Docker dentro del contenedor de Jenkins
 RUN apt-get update && \
     apt-get -y install apt-transport-https \
                        ca-certificates \
@@ -16,9 +24,9 @@ RUN apt-get update && \
     apt-get -y install docker-ce-cli
 
 # Crea el grupo 'docker' si no existe
-RUN groupadd -g 1001 docker
+RUN sudo groupadd -g 1001 docker
 
 # Crear un usuario Jenkins y agregarlo al grupo Docker
-RUN usermod -aG docker jenkins
+RUN sudo usermod -aG docker jenkins
 
 USER jenkins
