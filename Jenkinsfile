@@ -11,6 +11,7 @@ pipeline {
 
     environment {
         DOCKER_CREDENTIALS = credentials('docker-hub-credentials')
+
     }
 
     stages {
@@ -23,7 +24,7 @@ pipeline {
         stage('Build and Deploy') {
             steps {
                 script {
-                    docker.withRegistry('', DOCKER_CREDENTIALS) {
+                    docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS) {
                         sh 'docker-compose up -d'
                     }
                 }
