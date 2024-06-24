@@ -3,7 +3,6 @@ services:
     build:
       context: ./project_api
     container_name: project_api
-    dockerfile: Dockerfile.project_api
     volumes:
       - .:/app
       - ./nginx/gunicorn.conf.py:/etc/nginx/gunicorn.conf.py
@@ -30,7 +29,6 @@ services:
     build: 
       context: ./jenkins
     container_name: jenkins_server
-    dockerfile: Dockerfile.jenkins
     ports:
       - "8080:8080"
       - "50000:50000"
