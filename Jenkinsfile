@@ -16,7 +16,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/robertcnws/api_qbwc_zoho.git'
+                checkout scm
             }
         }
 
