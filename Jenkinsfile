@@ -44,7 +44,7 @@ pipeline {
                         sh 'docker rm project_api'
 
                         // Iniciar servicios
-                        sh 'docker-compose up -d nginx_server'
+                        sh 'docker-compose up -d nginx --build'
                     }
                 }
             }
