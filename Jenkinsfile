@@ -44,7 +44,7 @@ pipeline {
                         sh 'docker rm -f project_api 2>/dev/null || true'
 
                         // Iniciar servicios
-                        sh 'docker-compose up -d nginx'
+                        sh 'docker-compose -f docker-compose.yml up -d nginx'
                     }
                 }
             }
