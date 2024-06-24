@@ -10,9 +10,9 @@ pipeline {
     }
 
     environment {
-        DOCKER_CREDENTIALS = credentials('docker-hub-credentials')
-        DOCKER_USER = 'robertcnws'
-        DOCKER_REPO = 'robertcnws/api_qbwc_zoho'
+        DOCKER_CREDENTIALS = credentials('docker-hub-token')
+        DOCKER_USER = 'robertocnws'
+        DOCKER_REPO = 'robertocnws/api_qbwc_zoho'
 
     }
 
