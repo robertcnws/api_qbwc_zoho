@@ -26,6 +26,3 @@ USER jenkins
 
 # Configura el directorio de trabajo
 WORKDIR /var/jenkins_home
-
-# Define el comando de inicio del contenedor
-CMD ["bash"]
