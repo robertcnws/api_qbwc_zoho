@@ -23,10 +23,20 @@ pipeline {
             }
         }
 
+        stage('Login to Docker Hub') {
+            steps {
+                script {
+                    sh """
+                        echo \$DOCKER_CREDENTIALS | docker login -u \$DOCKER_USER --password-stdin
+                    """
+                }
+            }
+        }
+
         stage('Build and Push') {
             steps {
                 script {
-                    docker.withRegistry('https://index.docker.io/v1/', "${DOCKER_USER}:${DOCKER_CREDENTIALS}") {
+                    docker.withRegistry('https://index.docker.io/v1/', null) {
                         def app = docker.build("${DOCKER_REPO}:latest")
                         app.push()
                     }
