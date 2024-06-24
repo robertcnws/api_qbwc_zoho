@@ -39,9 +39,9 @@ pipeline {
                     docker.withRegistry('https://index.docker.io/v1/') {
                         // Detener servicios
                         sh 'docker stop nginx_server'
-                        sm 'docker rm nginx_server'
+                        sh 'docker rm nginx_server'
                         sh 'docker stop project_api'
-                        sm 'docker rm project_api'
+                        sh 'docker rm project_api'
 
                         // Iniciar servicios
                         sh 'docker-compose up -d nginx_server'
