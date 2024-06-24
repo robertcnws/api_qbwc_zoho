@@ -21,7 +21,10 @@ RUN apt-get update && \
     curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - && \
     add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable" && \
     apt-get update && \
-    apt-get -y install docker-ce-cli
+    apt-get -y install docker-ce-cli && \
+    # Install docker-compose
+    curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && \
+    chmod +x /usr/local/bin/docker-compose
 
 # Crea el grupo 'docker' si no existe
 RUN sudo groupadd -g 1001 docker
