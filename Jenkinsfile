@@ -25,7 +25,7 @@ pipeline {
         stage('Build and Push') {
             steps {
                 script {
-                    docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS) {
+                    docker.withRegistry('https://index.docker.io/v1/', "username:${DOCKER_CREDENTIALS}") {
                         def app = docker.build("${DOCKER_REPO}:latest")
                         app.push()
                     }
