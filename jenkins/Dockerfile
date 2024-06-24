@@ -21,8 +21,5 @@ RUN groupadd -g 1001 docker
 # Crear un usuario Jenkins y agregarlo al grupo Docker
 RUN usermod -aG docker jenkins
 
-# Cambiar al usuario Jenkins
-USER jenkins
-
 # Configura el directorio de trabajo
 WORKDIR /var/jenkins_home
