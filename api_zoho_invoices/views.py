@@ -14,21 +14,27 @@ def list_invoices(request):
     headers = api_zoho_views.config_headers(request)
     url = f'{settings.ZOHO_URL_READ_INVOICES}?organization_id={app_config.zoho_org_id}'
     response = requests.get(url, headers=headers)
-    response.raise_for_status()
-    if response.status_code == 200:
-        invoices = response.json()
-        print(invoices)
-        # for customer in items.get('contacts'):
-        #     data = json.loads(customer) if isinstance(customer, str) else customer
-        #     new_customer = create_customer_instance(data) 
-        #     new_customer.save()
-        context = {
-            'invoices': ZohoCustomer.objects.all() 
-        }  
-        # return invoices
-        return render(request, 'api_zoho_invoices/list_invoices.html', context)
-    else:
-        return JsonResponse({"error": "Failed to fetch invoices"}), response.status_code
+    if response.status_code == 401:
+        api_zoho_views.refresh_token(request)
+        headers = api_zoho_views.config_headers(request)
+        response = requests.get(url, headers=headers)
+        try:
+            response.raise_for_status()
+            if response.status_code == 200:
+                invoices = response.json()
+                print(invoices)
+                # for customer in items.get('contacts'):
+                #     data = json.loads(customer) if isinstance(customer, str) else customer
+                #     new_customer = create_customer_instance(data) 
+                #     new_customer.save()
+                context = {
+                    'invoices': ZohoCustomer.objects.all() 
+                }  
+                # return invoices
+                return render(request, 'api_zoho_invoices/list_invoices.html', context)
+        except requests.exceptions.HTTPError as err:
+                print(err)
+                return JsonResponse({"error": "Failed to fetch invoices"}), response.status_code
     
 
 def create_item_instance(data):

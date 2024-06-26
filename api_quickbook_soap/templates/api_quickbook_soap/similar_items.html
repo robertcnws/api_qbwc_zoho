@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Display Similar Items JSON</title>
+    <style>
+        pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border: 1px solid #ccc;
+            overflow: auto;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Similar Items</h2>
+<pre id="json-display"></pre>
+
+<script>
+    const jsonData = {{ similar_items|safe }};
+
+    // Convertir el JSON a una cadena con formato
+    const jsonString = JSON.stringify(jsonData, null, 2);
+
+    // Mostrar la cadena JSON en el elemento <pre>
+    document.getElementById('json-display').textContent = jsonString;
+</script>
+
+</body>
+</html>

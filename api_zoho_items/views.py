@@ -4,7 +4,7 @@ import api_zoho.views as api_zoho_views
 from django.conf import settings
 from api_zoho.models import AppConfig   
 from api_zoho_items.models import ZohoItem 
-from django.utils.dateparse import parse_datetime  
+from django.utils.dateparse import parse_datetime 
 import requests
 import json
 import os
@@ -12,10 +12,16 @@ import os
 def list_items(request):
     app_config = AppConfig.objects.first()
     headers = api_zoho_views.config_headers(request)
+    print(headers)
     url = f'{settings.ZOHO_URL_READ_ITEMS}?organization_id={app_config.zoho_org_id}'
     response = requests.get(url, headers=headers)
-    response.raise_for_status()
+    # if response.status_code == 401:
+    #     api_zoho_views.get_refresh_token(request)
+    #     headers = api_zoho_views.config_headers(request)
+    #     print(headers)
+    #     response = requests.get(url, headers=headers)
     if response.status_code == 200:
+        response.raise_for_status()
         items = response.json()
         print(items)
         for item in items.get('items'):

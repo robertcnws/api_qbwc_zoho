@@ -46,22 +46,23 @@ services:
     networks:
       - api_qbwc_zoho_network
 
-  db:
-    image: postgres:13.0
-    container_name: postgres_db
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_DB=mydatabase
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-    networks:
-      - api_qbwc_zoho_network
+  # db:
+  #   image: postgres:13.0
+  #   container_name: postgres_db
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   environment:
+  #     - POSTGRES_DB=mydatabase
+  #     - POSTGRES_USER=postgres
+  #     - POSTGRES_PASSWORD=postgres
+  #   networks:
+  #     - api_qbwc_zoho_network
 
 volumes:
-  postgres_data:
+  # postgres_data:
   jenkins_home:
 
 networks:
   api_qbwc_zoho_network:
+    # external: true
     driver: bridge
