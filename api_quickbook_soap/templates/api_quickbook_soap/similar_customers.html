@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Display Similar Items JSON</title>
+    <title>Display Similar Customers JSON</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <!-- DataTables CSS -->
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
@@ -22,11 +22,11 @@
     {% csrf_token %}
     <div class="row">
         <div class="col-8">
-            <h1>Similar Items</h1>
+            <h1>Similar Customers</h1>
         </div>
         <div class="col-4 d-flex justify-content-end align-items-center">
             <a href="{% url 'api_quickbook_soap:quickbook_api_settings' %}" class="btn btn-warning mr-2">Back</a>
-            <a href="{% url 'api_quickbook_soap:matched_items' %}" class="btn btn-success mr-2">Matched Items</a>
+            <a href="{% url 'api_quickbook_soap:matched_items' %}" class="btn btn-success mr-2">Matched Customers</a>
             <a href="#" class="btn btn-info mr-2" onclick="matchAllFirst(this)">Match All First</a>
         </div>
     </div>
@@ -35,36 +35,43 @@
         <thead class="thead-dark">
             <tr>
                 <th>No.</th>
-                <th>Quick Book Item</th>
+                <th>Quick Book Customer</th>
                 <th>QB List ID</th>
-                <th>Zoho Items</th>
-                <th>Coincidence</th>
+                <th>QB Email</th>
+                <th>QB Phone</th>
+                <th>Zoho Customer</th>
+                <th>Zoho Email Matching</th>
+                <th>Zoho Phone Matching</th>
                 <th>Actions</th>
             </tr>
         </thead>
         <tbody>
-            {% for item in similar_items %}
+            {% for item in similar_customers %}
                 {% if item.coincidences_by_order %}
                     {% for coincidence in item.coincidences_by_order %}
                         {% if forloop.first %}
-                            <tr class="main-row">
+                            <tr>
                                 <td rowspan="{{ item.coincidences_by_order|length }}">{{ forloop.parentloop.counter }}</td>
-                                <td rowspan="{{ item.coincidences_by_order|length }}">{{ item.qb_item_name }}</td>
-                                <td rowspan="{{ item.coincidences_by_order|length }}">{{ item.qb_item_list_id }}</td>
-                                <td style="background-color: #f8d7da; font-weight: bold;">{{ coincidence.zoho_item }} <br/>(SKU: {{ coincidence.zoho_item_sku }})</td>
-                                <td style="background-color: #f8d7da; font-weight: bold;">{{ coincidence.coincidence }}</td>
+                                <td rowspan="{{ item.coincidences_by_order|length }}">{{ item.qb_customer_name }}</td>
+                                <td rowspan="{{ item.coincidences_by_order|length }}">{{ item.qb_customer_list_id }}</td>
+                                <td rowspan="{{ item.coincidences_by_order|length }}">{{ item.qb_customer_email }}</td>
+                                <td rowspan="{{ item.coincidences_by_order|length }}">{{ item.qb_customer_phone }}</td>
+                                <td style="background-color: #f8d7da; font-weight: bold;">{{ coincidence.zoho_customer }}</td>
+                                <td style="background-color: #f8d7da; font-weight: bold;">{{ coincidence.email }}<br/>(Match: {{ coincidence.coincidence_email }})</td>
+                                <td style="background-color: #f8d7da; font-weight: bold;">{{ coincidence.phone }}<br/>(Match: {{ coincidence.coincidence_phone }})</td>
                                 <td style="background-color: #f8d7da; font-weight: bold;">
-                                    <button class="edit-button" onclick="matchRow(this, '{{ item.qb_item_list_id }}', '{{ coincidence.zoho_item_id }}')">
+                                    <button class="edit-button" onclick="matchRow(this, '{{ item.qb_customer_list_id }}', '{{ coincidence.zoho_customer_id }}')">
                                         Match
                                     </button>
                                 </td>
                             </tr>
                         {% else %}
-                            <tr class="sub-row">
-                                <td>{{ coincidence.zoho_item }} <br/><b>(SKU: {{ coincidence.zoho_item_sku }})</b></td>
-                                <td>{{ coincidence.coincidence }}</td>
+                            <tr>
+                                <td>{{ coincidence.zoho_customer }}</td>
+                                <td>{{ coincidence.email }}<br/>(Match: {{ coincidence.coincidence_email }})</td>
+                                <td>{{ coincidence.phone }}<br/>(Match: {{ coincidence.coincidence_phone }})</td>
                                 <td>
-                                    <button class="edit-button" onclick="matchRow(this, '{{ item.qb_item_list_id }}', '{{ coincidence.zoho_item_id }}')">
+                                    <button class="edit-button" onclick="matchRow(this, '{{ item.qb_customer_list_id }}', '{{ coincidence.zoho_customer_id }}')">
                                         Match
                                     </button>
                                 </td>
@@ -74,9 +81,11 @@
                 {% else %}
                     <tr>
                         <td>{{ forloop.counter }}</td>
-                        <td>{{ item.qb_item_name }}</td>
-                        <td>{{ item.qb_item_list_id }}</td>
-                        <td colspan="3">No coincidences</td>
+                        <td>{{ item.qb_customer_name }}</td>
+                        <td>{{ item.qb_customer_list_id }}</td>
+                        <td>{{ item.qb_customer_email }}</td>
+                        <td>{{ item.qb_customer_phone }}</td>
+                        <td colspan="4">No coincidences</td>
                     </tr>
                 {% endif %}
             {% endfor %}
@@ -106,17 +115,19 @@
         });
     });
 
-    function editRow(qb_item_list_id, zoho_item) {
-        alert('Edit item: ' + qb_item_list_id + ' with Zoho item: ' + zoho_item);
+    function editRow(qb_customer_list_id, zoho_customer) {
+        alert('Edit item: ' + qb_customer_list_id + ' with Zoho item: ' + zoho_customer);
     }
 
-    function matchRow(button, qb_item_list_id, zoho_item_id) {
-        if (confirm('Are you sure you want to match this item?')) {
+    function matchRow(button, qb_customer_list_id, zoho_customer_id) {
+        if (confirm('Are you sure you want to match this customer?')) {
             // Encontrar todas las filas relacionadas
             var mainRow = $('.main-row').filter(function() {
                 return $(this).find('td:nth-child(3)').text().trim() === qb_item_list_id;
             });
             var subRows = mainRow.nextUntil('.main-row');
+
+            // Enviar solicitud AJAX para guardar la coincidencia
 
             var csrftoken = getCookie('csrftoken');
             // Encontrar todas las filas principales
@@ -124,12 +135,12 @@
             
             // Eliminar todas las filas principales
             $.ajax({
-                 url: '/api_quickbook_soap/match_one_item_ajax/',
+                 url: '/api_quickbook_soap/match_one_customer_ajax/',
                  type: 'POST',
                  data: {
                     'csrfmiddlewaretoken': csrftoken,
-                    'qb_item_list_id': qb_item_list_id,
-                    'zoho_item_id': zoho_item_id,
+                    'qb_customer_list_id': qb_customer_list_id,
+                    'zoho_customer_id': zoho_customer_id,
                     'action': 'match'
                  },
                  success: function(response) {
@@ -140,21 +151,18 @@
                      alert('Error matching items for customer');
                  }
              });
-            
-
-            
         }
     }
 
     function matchAllFirst(button) {
-        if (confirm('Are you sure you want to match all first items?')) {
+        if (confirm('Are you sure you want to match all first customers?')) {
             var csrftoken = getCookie('csrftoken');
             // Encontrar todas las filas principales
             var mainRows = $('.main-row');
             
             // Eliminar todas las filas principales
             $.ajax({
-                 url: '/api_quickbook_soap/match_all_first_items_ajax/',
+                 url: '/api_quickbook_soap/match_all_first_customers_ajax/',
                  type: 'POST',
                  data: {
                     'csrfmiddlewaretoken': csrftoken,
@@ -185,8 +193,6 @@
         }
         return cookieValue;
     }
-    
-
 </script>
 
 </body>

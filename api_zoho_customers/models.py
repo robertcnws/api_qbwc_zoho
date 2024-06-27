@@ -20,8 +20,13 @@ class ZohoCustomer(models.Model):
     
     
     def save(self, *args, **kwargs):
-        if not (ZohoCustomer.objects.filter(contact_id=self.contact_id).exists() or ZohoCustomer.objects.filter(email=self.email).exists()):
-            super(ZohoCustomer, self).save(*args, **kwargs)
+        if self.pk:
+            return super(ZohoCustomer, self).save(*args, **kwargs)
+        else:
+            if not (ZohoCustomer.objects.filter(contact_id=self.contact_id).exists() or ZohoCustomer.objects.filter(email=self.email).exists()):
+                super(ZohoCustomer, self).save(*args, **kwargs)
+            else:
+                print(f"ZohoCustomer {self.contact_id} no guardado porque ya existe un objeto con el mismo contact_id o email")
 
     def __str__(self):
         return self.contact_name

@@ -24,23 +24,6 @@
 
         <!-- Main Content -->
         <div class="settingsMain">
-            <div class="heading">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h5>Integration Settings</h5>
-                    {% if not connected  %}
-                        <div class="alert alert-warning d-flex align-items-center mb-0" role="alert">
-                            <i class="fas fa-exclamation-triangle text-warning me-2"></i>
-                            <p class="mb-0">You are currently not connected to Zoho</p>
-                        </div>
-                    {% else %}
-                        <div class="alert alert-success d-flex align-items-center mb-0" role="alert">
-                            <i class="fas fa-check-circle text-success me-2"></i>
-                            <p class="mb-0">Zoho Connection: <span class="badge bg-success">Connected</span></p>
-                        </div>
-                    {% endif %}
-                </div>
-                <hr/>
-            </div>
 
             <div class="row mb-3">
                 <div class="col-md-8 mt-3">
@@ -61,12 +44,12 @@
                                 <div class="container mt-5">
                                     <ul class="list-group">
                                         <li class="list-group-item">
-                                            <a href="{% url 'api_zoho_customers:list_customers' %}" class="text-decoration-none">
+                                            <a href="{% url 'api_quickbook_soap:matching_customers' %}" class="text-decoration-none">
                                                 <i class="fas fa-users me-2"></i> Customers
                                             </a>
                                         </li>
                                         <li class="list-group-item">
-                                            <a href="{% url 'api_zoho_items:list_items' %}" class="text-decoration-none">
+                                            <a href="{% url 'api_quickbook_soap:matching_items' %}" class="text-decoration-none">
                                                 <i class="fas fa-box me-2"></i> Items
                                             </a>
                                         </li>
