@@ -8,17 +8,14 @@
     <!-- DataTables CSS -->
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
     <style>
-        pre {
-            background-color: #f4f4f4;
-            padding: 10px;
-            border: 1px solid #ccc;
-            overflow: auto;
+        .highlight {
+            background-color: #f8d7da;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-
-<div class="container mt-5">
+<div class="container-fluid mt-5">
     {% csrf_token %}
     <div class="row">
         <div class="col-8">
@@ -26,71 +23,93 @@
         </div>
         <div class="col-4 d-flex justify-content-end align-items-center">
             <a href="{% url 'api_quickbook_soap:quickbook_api_settings' %}" class="btn btn-warning mr-2">Back</a>
-            <a href="{% url 'api_quickbook_soap:matched_items' %}" class="btn btn-success mr-2">Matched Customers</a>
+            <a href="{% url 'api_quickbook_soap:matched_customers' %}" class="btn btn-success mr-2">Matched Customers</a>
             <a href="#" class="btn btn-info mr-2" onclick="matchAllFirst(this)">Match All First</a>
         </div>
     </div>
+
+    <div class="row mt-3">
+        <div class="col-12">
+            <p class="alert alert-info">
+                There are {{ similar_customers|length }} customers found.
+            </p>
+        </div>
+    </div>
     
-    <table id="myTable" class="table table-bordered table-striped">
-        <thead class="thead-dark">
-            <tr>
-                <th>No.</th>
-                <th>Quick Book Customer</th>
-                <th>QB List ID</th>
-                <th>QB Email</th>
-                <th>QB Phone</th>
-                <th>Zoho Customer</th>
-                <th>Zoho Email Matching</th>
-                <th>Zoho Phone Matching</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in similar_customers %}
-                {% if item.coincidences_by_order %}
-                    {% for coincidence in item.coincidences_by_order %}
-                        {% if forloop.first %}
-                            <tr>
-                                <td rowspan="{{ item.coincidences_by_order|length }}">{{ forloop.parentloop.counter }}</td>
-                                <td rowspan="{{ item.coincidences_by_order|length }}">{{ item.qb_customer_name }}</td>
-                                <td rowspan="{{ item.coincidences_by_order|length }}">{{ item.qb_customer_list_id }}</td>
-                                <td rowspan="{{ item.coincidences_by_order|length }}">{{ item.qb_customer_email }}</td>
-                                <td rowspan="{{ item.coincidences_by_order|length }}">{{ item.qb_customer_phone }}</td>
-                                <td style="background-color: #f8d7da; font-weight: bold;">{{ coincidence.zoho_customer }}</td>
-                                <td style="background-color: #f8d7da; font-weight: bold;">{{ coincidence.email }}<br/>(Match: {{ coincidence.coincidence_email }})</td>
-                                <td style="background-color: #f8d7da; font-weight: bold;">{{ coincidence.phone }}<br/>(Match: {{ coincidence.coincidence_phone }})</td>
-                                <td style="background-color: #f8d7da; font-weight: bold;">
-                                    <button class="edit-button" onclick="matchRow(this, '{{ item.qb_customer_list_id }}', '{{ coincidence.zoho_customer_id }}')">
-                                        Match
-                                    </button>
-                                </td>
-                            </tr>
-                        {% else %}
-                            <tr>
-                                <td>{{ coincidence.zoho_customer }}</td>
-                                <td>{{ coincidence.email }}<br/>(Match: {{ coincidence.coincidence_email }})</td>
-                                <td>{{ coincidence.phone }}<br/>(Match: {{ coincidence.coincidence_phone }})</td>
-                                <td>
-                                    <button class="edit-button" onclick="matchRow(this, '{{ item.qb_customer_list_id }}', '{{ coincidence.zoho_customer_id }}')">
-                                        Match
-                                    </button>
-                                </td>
-                            </tr>
-                        {% endif %}
-                    {% endfor %}
-                {% else %}
-                    <tr>
-                        <td>{{ forloop.counter }}</td>
-                        <td>{{ item.qb_customer_name }}</td>
-                        <td>{{ item.qb_customer_list_id }}</td>
-                        <td>{{ item.qb_customer_email }}</td>
-                        <td>{{ item.qb_customer_phone }}</td>
-                        <td colspan="4">No coincidences</td>
-                    </tr>
-                {% endif %}
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <div class="table-responsive">
+                <table id="myTable" class="table table-bordered table-striped">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>No.</th>
+                            <th>Quick Book Customer</th>
+                            <th>QB List ID</th>
+                            <th>QB Email</th>
+                            <th>QB Phone</th>
+                            <th>Zoho Customer</th>
+                            <th>Zoho Email Matching</th>
+                            <th>Zoho Phone Matching</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in similar_customers %}
+                            {% if item.coincidences_by_order %}
+                                {% for coincidence in item.coincidences_by_order %}
+                                    {% if forloop.first %}
+                                        <tr>
+                                            <td>{{ forloop.parentloop.counter }}</td>
+                                            <td>{{ item.qb_customer_name }}</td>
+                                            <td>{{ item.qb_customer_list_id }}</td>
+                                            <td>{{ item.qb_customer_email }}</td>
+                                            <td>{{ item.qb_customer_phone }}</td>
+                                            <td class="highlight">{{ coincidence.zoho_customer }}<br/>(ID: {{ coincidence.zoho_customer_id }})</td>
+                                            <td class="highlight">{{ coincidence.email }}<br/>(Match: {{ coincidence.coincidence_email }})</td>
+                                            <td class="highlight">{{ coincidence.phone }}<br/>(Match: {{ coincidence.coincidence_phone }})</td>
+                                            <td class="highlight">
+                                                <button class="edit-button" onclick="matchRow(this, '{{ item.qb_customer_list_id }}', '{{ coincidence.zoho_customer_id }}')">
+                                                    Match
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    {% else %}
+                                        <tr>
+                                            <td>{{ forloop.parentloop.counter }}</td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td>{{ coincidence.zoho_customer }}<br/>(ID: {{ coincidence.zoho_customer_id }})</td>
+                                            <td>{{ coincidence.email }}<br/>(Match: {{ coincidence.coincidence_email }})</td>
+                                            <td>{{ coincidence.phone }}<br/>(Match: {{ coincidence.coincidence_phone }})</td>
+                                            <td>
+                                                <button class="edit-button" onclick="matchRow(this, '{{ item.qb_customer_list_id }}', '{{ coincidence.zoho_customer_id }}')">
+                                                    Match
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    {% endif %}
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ item.qb_customer_name }}</td>
+                                    <td>{{ item.qb_customer_list_id }}</td>
+                                    <td>{{ item.qb_customer_email }}</td>
+                                    <td>{{ item.qb_customer_phone }}</td>
+                                    <td>No coincidences</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Incluir jQuery y otras bibliotecas necesarias -->
@@ -100,7 +119,6 @@
 
 <!-- Incluir DataTables JS -->
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
-<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/rowgroup/1.1.4/js/dataTables.rowGroup.min.js"></script>
 
 <script type="text/javascript">
     $(document).ready(function() {
@@ -108,10 +126,7 @@
             "paging": true,            
             "pageLength": 10,          
             "lengthMenu": [10, 25, 50],
-            "order": [[1, 'asc']],  
-            "rowGroup": {
-                "dataSrc": "1"  
-            }
+            "ordering": false,
         });
     });
 
@@ -121,19 +136,7 @@
 
     function matchRow(button, qb_customer_list_id, zoho_customer_id) {
         if (confirm('Are you sure you want to match this customer?')) {
-            // Encontrar todas las filas relacionadas
-            var mainRow = $('.main-row').filter(function() {
-                return $(this).find('td:nth-child(3)').text().trim() === qb_item_list_id;
-            });
-            var subRows = mainRow.nextUntil('.main-row');
-
-            // Enviar solicitud AJAX para guardar la coincidencia
-
             var csrftoken = getCookie('csrftoken');
-            // Encontrar todas las filas principales
-            var mainRows = $('.main-row');
-            
-            // Eliminar todas las filas principales
             $.ajax({
                  url: '/api_quickbook_soap/match_one_customer_ajax/',
                  type: 'POST',
@@ -145,7 +148,7 @@
                  },
                  success: function(response) {
                     console.log(response);
-                     window.location.reload();
+                    window.location.reload();
                  },
                  error: function(response) {
                      alert('Error matching items for customer');
@@ -157,10 +160,6 @@
     function matchAllFirst(button) {
         if (confirm('Are you sure you want to match all first customers?')) {
             var csrftoken = getCookie('csrftoken');
-            // Encontrar todas las filas principales
-            var mainRows = $('.main-row');
-            
-            // Eliminar todas las filas principales
             $.ajax({
                  url: '/api_quickbook_soap/match_all_first_customers_ajax/',
                  type: 'POST',
@@ -184,7 +183,6 @@
             var cookies = document.cookie.split(';');
             for (var i = 0; i < cookies.length; i++) {
                 var cookie = cookies[i].trim();
-                // Verificar si la cookie contiene el nombre buscado
                 if (cookie.substring(0, name.length + 1) === (name + '=')) {
                     cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                     break;

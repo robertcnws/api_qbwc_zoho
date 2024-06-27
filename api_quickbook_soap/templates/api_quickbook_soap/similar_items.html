@@ -18,7 +18,7 @@
 </head>
 <body>
 
-<div class="container mt-5">
+<div class="container-fluid mt-5"> <!-- Cambiado a container-fluid para ocupar todo el ancho -->
     {% csrf_token %}
     <div class="row">
         <div class="col-8">
@@ -30,58 +30,77 @@
             <a href="#" class="btn btn-info mr-2" onclick="matchAllFirst(this)">Match All First</a>
         </div>
     </div>
-    
-    <table id="myTable" class="table table-bordered table-striped">
-        <thead class="thead-dark">
-            <tr>
-                <th>No.</th>
-                <th>Quick Book Item</th>
-                <th>QB List ID</th>
-                <th>Zoho Items</th>
-                <th>Coincidence</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in similar_items %}
-                {% if item.coincidences_by_order %}
-                    {% for coincidence in item.coincidences_by_order %}
-                        {% if forloop.first %}
-                            <tr class="main-row">
-                                <td rowspan="{{ item.coincidences_by_order|length }}">{{ forloop.parentloop.counter }}</td>
-                                <td rowspan="{{ item.coincidences_by_order|length }}">{{ item.qb_item_name }}</td>
-                                <td rowspan="{{ item.coincidences_by_order|length }}">{{ item.qb_item_list_id }}</td>
-                                <td style="background-color: #f8d7da; font-weight: bold;">{{ coincidence.zoho_item }} <br/>(SKU: {{ coincidence.zoho_item_sku }})</td>
-                                <td style="background-color: #f8d7da; font-weight: bold;">{{ coincidence.coincidence }}</td>
-                                <td style="background-color: #f8d7da; font-weight: bold;">
-                                    <button class="edit-button" onclick="matchRow(this, '{{ item.qb_item_list_id }}', '{{ coincidence.zoho_item_id }}')">
-                                        Match
-                                    </button>
-                                </td>
-                            </tr>
-                        {% else %}
-                            <tr class="sub-row">
-                                <td>{{ coincidence.zoho_item }} <br/><b>(SKU: {{ coincidence.zoho_item_sku }})</b></td>
-                                <td>{{ coincidence.coincidence }}</td>
-                                <td>
-                                    <button class="edit-button" onclick="matchRow(this, '{{ item.qb_item_list_id }}', '{{ coincidence.zoho_item_id }}')">
-                                        Match
-                                    </button>
-                                </td>
-                            </tr>
-                        {% endif %}
-                    {% endfor %}
-                {% else %}
-                    <tr>
-                        <td>{{ forloop.counter }}</td>
-                        <td>{{ item.qb_item_name }}</td>
-                        <td>{{ item.qb_item_list_id }}</td>
-                        <td colspan="3">No coincidences</td>
-                    </tr>
-                {% endif %}
-            {% endfor %}
-        </tbody>
-    </table>
+
+    <div class="row mt-3">
+        <div class="col-12">
+            <p class="alert alert-info">
+                There are {{ similar_items|length }} items found.
+            </p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <div class="table-responsive">
+                <table id="myTable" class="table table-bordered table-striped">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>No.</th>
+                            <th>Quick Book Item</th>
+                            <th>QB List ID</th>
+                            <th>Zoho Items</th>
+                            <th>Coincidence</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in similar_items %}
+                            {% if item.coincidences_by_order %}
+                                {% for coincidence in item.coincidences_by_order %}
+                                    {% if forloop.first %}
+                                        <tr class="main-row">
+                                            <td>{{ forloop.parentloop.counter }}</td>
+                                            <td>{{ item.qb_item_name }}</td>
+                                            <td>{{ item.qb_item_list_id }}</td>
+                                            <td style="background-color: #f8d7da; font-weight: bold;">{{ coincidence.zoho_item }} <br/>(SKU: {{ coincidence.zoho_item_sku }})</td>
+                                            <td style="background-color: #f8d7da; font-weight: bold;">{{ coincidence.coincidence }}</td>
+                                            <td style="background-color: #f8d7da; font-weight: bold;">
+                                                <button class="edit-button" onclick="matchRow(this, '{{ item.qb_item_list_id }}', '{{ coincidence.zoho_item_id }}')">
+                                                    Match
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    {% else %}
+                                        <tr class="sub-row">
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td>{{ coincidence.zoho_item }} <br/><b>(SKU: {{ coincidence.zoho_item_sku }})</b></td>
+                                            <td>{{ coincidence.coincidence }}</td>
+                                            <td>
+                                                <button class="edit-button" onclick="matchRow(this, '{{ item.qb_item_list_id }}', '{{ coincidence.zoho_item_id }}')">
+                                                    Match
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    {% endif %}
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ item.qb_item_name }}</td>
+                                    <td>{{ item.qb_item_list_id }}</td>
+                                    <td>No coincidences</td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Incluir jQuery y otras bibliotecas necesarias -->
@@ -99,10 +118,7 @@
             "paging": true,            
             "pageLength": 10,          
             "lengthMenu": [10, 25, 50],
-            "order": [[1, 'asc']],  
-            "rowGroup": {
-                "dataSrc": "1"  
-            }
+            "ordering": false,
         });
     });
 
@@ -112,17 +128,8 @@
 
     function matchRow(button, qb_item_list_id, zoho_item_id) {
         if (confirm('Are you sure you want to match this item?')) {
-            // Encontrar todas las filas relacionadas
-            var mainRow = $('.main-row').filter(function() {
-                return $(this).find('td:nth-child(3)').text().trim() === qb_item_list_id;
-            });
-            var subRows = mainRow.nextUntil('.main-row');
-
             var csrftoken = getCookie('csrftoken');
-            // Encontrar todas las filas principales
-            var mainRows = $('.main-row');
             
-            // Eliminar todas las filas principales
             $.ajax({
                  url: '/api_quickbook_soap/match_one_item_ajax/',
                  type: 'POST',
@@ -140,19 +147,13 @@
                      alert('Error matching items for customer');
                  }
              });
-            
-
-            
         }
     }
 
     function matchAllFirst(button) {
         if (confirm('Are you sure you want to match all first items?')) {
             var csrftoken = getCookie('csrftoken');
-            // Encontrar todas las filas principales
-            var mainRows = $('.main-row');
             
-            // Eliminar todas las filas principales
             $.ajax({
                  url: '/api_quickbook_soap/match_all_first_items_ajax/',
                  type: 'POST',
@@ -176,7 +177,6 @@
             var cookies = document.cookie.split(';');
             for (var i = 0; i < cookies.length; i++) {
                 var cookie = cookies[i].trim();
-                // Verificar si la cookie contiene el nombre buscado
                 if (cookie.substring(0, name.length + 1) === (name + '=')) {
                     cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                     break;
@@ -185,8 +185,6 @@
         }
         return cookieValue;
     }
-    
-
 </script>
 
 </body>

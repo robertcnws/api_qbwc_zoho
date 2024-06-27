@@ -10,6 +10,7 @@ urlpatterns = [
     path("matching_items/", views.matching_items, name="matching_items"),
     path("matching_customers/", views.matching_customers, name="matching_customers"),
     path("match_all_first_items_ajax/", views.match_all_first_items_ajax, name="match_all_first_items_ajax"),
+    path("match_all_first_customers_ajax/", views.match_all_first_customers_ajax, name="match_all_first_customers_ajax"),
     path("match_one_item_ajax/", views.match_one_item_ajax, name="match_one_item_ajax"),
     path("match_one_customer_ajax/", views.match_one_customer_ajax, name="match_one_customer_ajax"),
     path("matched_items/", views.matched_items, name="matched_items"),

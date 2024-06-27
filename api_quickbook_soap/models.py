@@ -28,12 +28,17 @@ class QbCustomer(models.Model):
     matched = models.BooleanField(default=False)
     
     def save(self, *args, **kwargs):
-        if not (
-            QbCustomer.objects.filter(list_id=self.list_id).exists() or 
-            QbCustomer.objects.filter(email=self.email).exists() or 
-            QbCustomer.objects.filter(phone=self.phone).exists()
-        ):
+        if self.pk:  
             super(QbCustomer, self).save(*args, **kwargs)
+        else:
+            if not (
+                QbCustomer.objects.filter(list_id=self.list_id).exists() or 
+                QbCustomer.objects.filter(email=self.email).exists() or 
+                QbCustomer.objects.filter(phone=self.phone).exists()
+            ):
+                super(QbCustomer, self).save(*args, **kwargs)
+            else:
+                print(f"QbCustomer {self.name} no guardado porque ya existe un objeto con el mismo list_id, email o phone")
 
     def __str__(self):
         return self.name

@@ -4,17 +4,22 @@ from django.views.decorators.http import require_POST
 from django.shortcuts import render, get_object_or_404
 from api_zoho_customers.models import ZohoCustomer
 from api_zoho_items.models import ZohoItem
-from api_zoho_items.forms import ZohoItemForm
 from .models import QbItem, QbCustomer
-from .forms import QbItemForm
 import difflib
 import api_quickbook_soap.soap_service as soap_service
 import xmltodict
 import logging
 
+#############################################
 # Configura el logging
+#############################################
+
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
+
+#############################################
+# Declarar variables globales
+#############################################
 
 counter = 0
 soap_customers = []
@@ -25,6 +30,7 @@ insert = False
 
 #############################################
 # Endpoints to Serve SOAP Requests
+#############################################
 
 @csrf_exempt
 def item_query(request):
@@ -38,7 +44,8 @@ def customer_query(request):
 
 
 #############################################
-# Home page module
+# Home page
+#############################################
 
 def quickbook_api_settings(request):
     global soap_customers
@@ -48,9 +55,9 @@ def quickbook_api_settings(request):
 
 #############################################
 # Trying to get matched elements here
+#############################################
 
 def matching_items(request):
-    global soap_items
     global similar_items
     similar_items = []
     qb_items = QbItem.objects.filter(matched=False)
@@ -79,8 +86,8 @@ def matching_items(request):
 
 
 def matching_customers(request):
-    global soap_customers
     global similar_customers
+    similar_customers = []
     qb_customers = QbCustomer.objects.filter(matched=False)
     zoho_customers = ZohoCustomer.objects.filter(qb_list_id__isnull=True) | ZohoCustomer.objects.filter(qb_list_id='')
     for qb_customer in qb_customers:    
@@ -115,7 +122,7 @@ def matching_customers(request):
 
 #############################################
 # Display matched elements
-
+#############################################
 
 def matched_items(request):
     qb_items = QbItem.objects.filter(matched=True)
@@ -140,13 +147,13 @@ def matched_items(request):
 
 def matched_customers(request):
     qb_customers = QbCustomer.objects.filter(matched=True)
-    zoho_customers = ZohoCustomer.objects.filter(qb_list_id__isnull=False) | ZohoItem.objects.exclude(qb_list_id='')
+    zoho_customers = ZohoCustomer.objects.filter(qb_list_id__isnull=False) | ZohoCustomer.objects.exclude(qb_list_id='')
     matched_customers = []
     for qb_customer in qb_customers: 
         for zoho_customer in zoho_customers:
             if qb_customer.list_id == zoho_customer.qb_list_id:
                 matched = {
-                        'zoho_customer_id': zoho_customer.item_id,
+                        'zoho_customer_id': zoho_customer.contact_id,
                         'zoho_customer': zoho_customer.customer_name, 
                         'qb_customer_name': qb_customer.name,
                         'qb_customer_list_id': qb_customer.list_id,
@@ -162,12 +169,13 @@ def matched_customers(request):
 # AJAX methods
 #############################################
 # Match all by first element
+#############################################
 
 @require_POST
 def match_all_first_items_ajax(request):
     global similar_items
     filter_similar_items = list(filter(lambda x: len(x['coincidences_by_order']) > 0, similar_items))
-    action = request.GET.get('action')  
+    action = request.POST['action']  
     try:
         for item in filter_similar_items:
             if item['coincidences_by_order']:
@@ -186,11 +194,11 @@ def match_all_first_items_ajax(request):
 def match_all_first_customers_ajax(request):
     global similar_customers
     filter_similar_customers = list(filter(lambda x: len(x['coincidences_by_order']) > 0, similar_customers))
-    action = request.GET.get('action')  
+    action = request.POST['action']  
     try:
         for customer in filter_similar_customers:
             if customer['coincidences_by_order']:
-                zoho_customer = ZohoCustomer.objects.get(item_id=customer['coincidences_by_order'][0]['zoho_customer_id'])
+                zoho_customer = ZohoCustomer.objects.get(contact_id=customer['coincidences_by_order'][0]['zoho_customer_id'])
                 qb_customer = QbCustomer.objects.get(list_id=customer['qb_customer_list_id'])
                 zoho_customer.qb_list_id = customer['qb_item_list_id'] if action == 'match' else ''
                 zoho_customer.save()
@@ -203,10 +211,11 @@ def match_all_first_customers_ajax(request):
 
 #############################################
 # Match one by selected element
+#############################################
 
 @require_POST
 def match_one_item_ajax(request):
-    action = request.GET.get('action')  
+    action = request.POST['action']
     try:
         qb_list_id = request.POST['qb_item_list_id']
         zoho_item_id = request.POST['zoho_item_id']
@@ -223,12 +232,17 @@ def match_one_item_ajax(request):
 
 @require_POST
 def match_one_customer_ajax(request):
-    action = request.GET.get('action')
+    action = request.POST['action']
+    print(f"Action: {action}")
     try:
         qb_list_id = request.POST['qb_customer_list_id']
         zoho_customer_id = request.POST['zoho_customer_id']
-        qb_customer = get_object_or_404(QbItem, list_id=qb_list_id)
-        zoho_customer = get_object_or_404(ZohoCustomer, item_id=zoho_customer_id)
+        print(f"Zoho Customer ID: {zoho_customer_id}")
+        print(f"QB List ID: {qb_list_id}")
+        qb_customer = get_object_or_404(QbCustomer, list_id=qb_list_id)
+        print(f"QB Customer: {qb_customer}")    
+        zoho_customer = get_object_or_404(ZohoCustomer, contact_id=zoho_customer_id)
+        print(f"Zoho Customer: {zoho_customer}")
         zoho_customer.qb_list_id = qb_list_id if action == 'match' else ''
         zoho_customer.save()
         qb_customer.matched = True if action == 'match' else False
@@ -240,6 +254,7 @@ def match_one_customer_ajax(request):
     
 #############################################    
 # SOAP requests
+#############################################
 
     
 def start_qbwc_query_request(request, query_object_name, list_of_objects):

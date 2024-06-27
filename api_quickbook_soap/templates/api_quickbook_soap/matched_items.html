@@ -18,7 +18,7 @@
 </head>
 <body>
 
-<div class="container mt-5">
+<div class="container-fluid mt-5">
     {% csrf_token %}
     <div class="row">
         <div class="col-8">
@@ -29,35 +29,50 @@
             <a href="#" class="btn btn-info mr-2" onclick="unmatchAllFirst(this)">Unmatch All</a>
         </div>
     </div>
-    
-    <table id="myTable" class="table table-bordered table-striped">
-        <thead class="thead-dark">
-            <tr>
-                <th>No.</th>
-                <th>Quick Book Item</th>
-                <th>Zoho Item</th>
-                <th>List ID</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in matched_items %}
 
-                <tr class="main-row">
-                    <td>{{ forloop.counter }}</td>
-                    <td>{{ item.qb_item_name }}</td>
-                    <td>{{ item.zoho_item }} <br/>(SKU: {{ item.zoho_item_sku }})</td>
-                    <td>{{ item.qb_item_list_id }}</td>
-                    <td>
-                        <button class="warning-button" onclick="unmatchRow(this, '{{ item.qb_item_list_id }}', '{{ item.zoho_item_id }}')">
-                            Unmatch
-                        </button>
-                    </td>
-                </tr>
-                
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="row mt-3">
+        <div class="col-12">
+            <p class="alert alert-info">
+                There are {{ matched_items|length }} matched items found.
+            </p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <div class="table-responsive">
+    
+                <table id="myTable" class="table table-bordered table-striped">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>No.</th>
+                            <th>Quick Book Item</th>
+                            <th>Zoho Item</th>
+                            <th>List ID</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in matched_items %}
+
+                            <tr class="main-row">
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ item.qb_item_name }}</td>
+                                <td>{{ item.zoho_item }} <br/>(SKU: {{ item.zoho_item_sku }})</td>
+                                <td>{{ item.qb_item_list_id }}</td>
+                                <td>
+                                    <button class="warning-button" onclick="unmatchRow(this, '{{ item.qb_item_list_id }}', '{{ item.zoho_item_id }}')">
+                                        Unmatch
+                                    </button>
+                                </td>
+                            </tr>
+                            
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Incluir jQuery y otras bibliotecas necesarias -->
