@@ -7,6 +7,7 @@ urlpatterns = [
     path("quickbook_api_settings/", views.quickbook_api_settings, name="quickbook_api_settings"),
     path("customer_query/", views.customer_query, name="customer_query"),
     path("item_query/", views.item_query, name="item_query"),
+    path("invoice_add_request/", views.invoice_add_request, name="invoice_add_request"),
     path("matching_items/", views.matching_items, name="matching_items"),
     path("matching_customers/", views.matching_customers, name="matching_customers"),
     path("match_all_first_items_ajax/", views.match_all_first_items_ajax, name="match_all_first_items_ajax"),

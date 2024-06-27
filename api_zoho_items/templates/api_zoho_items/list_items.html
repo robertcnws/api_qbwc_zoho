@@ -5,56 +5,77 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Items List</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
 </head>
 <body>
-    <div class="container mt-5">
+    <div class="container-fluid mt-5">
         <div class="row" role="alert">
             <div class="col-12 d-flex justify-content-between align-items-center mb-3">
-                <h1>Items List</h1>
-                <a href="{% url 'home' %}" class="btn btn-warning">Back</a>
+                <h1>Zoho Invoices List</h1>
+                <a href="{% url 'api_zoho:zoho_api_settings' %}" class="btn btn-warning">Back</a>
+            </div>
+        </div>
+
+        <div class="row mt-3">
+            <div class="col-12">
+                <p class="alert alert-info">
+                    There are {{ items|length }} items found.
+                </p>
             </div>
         </div>
         
-        <table class="table table-bordered table-striped">
-            <thead class="thead-dark">
-                <tr>
-                    <th>No.</th>
-                    <th>ID</th>
-                    <th>Item ID</th>
-                    <th>Name</th>
-                    <th>Unit</th>
-                    <th>Status</th>
-                    <th>Source</th>
-                    <th>Rate</th>
-                    <th>Stock on Hand</th>
-                    <th>SKU</th>
-                    <th>Created Time</th>
-                    <th>Last Modified Time</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in items %}
-                <tr>
-                    <td>{{ forloop.counter }}</td>
-                    <td>{{ item.id }}</td>
-                    <td>{{ item.item_id }}</td>
-                    <td>{{ item.name }}</td>
-                    <td>{{ item.unit }}</td>
-                    <td>{{ item.status }}</td>
-                    <td>{{ item.source }}</td>
-                    <td>{{ item.rate }}</td>
-                    <td>{{ item.stock_on_hand }}</td>
-                    <td>{{ item.sku }}</td>
-                    <td>{{ item.created_time }}</td>
-                    <td>{{ item.last_modified_time }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="row justify-content-center">
+            <div class="col-12">
+                <div class="table-responsive">
+                    <table id="myTable" class="table table-bordered table-striped">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>No.</th>
+                                <th>Item ID</th>
+                                <th>Name</th>
+                                <th>Status</th>
+                                <th>Rate</th>
+                                <th>SKU</th>
+                                <th>Created Time</th>
+                                <th>Last Modified Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in items %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ item.item_id }}</td>
+                                <td>{{ item.name }}</td>
+                                <td>{{ item.status }}</td>
+                                <td>{{ item.rate }}</td>
+                                <td>{{ item.sku }}</td>
+                                <td>{{ item.created_time }}</td>
+                                <td>{{ item.last_modified_time }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- Incluir DataTables JS -->
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            $('#myTable').DataTable({
+                "paging": true,            
+                "pageLength": 10,          
+                "lengthMenu": [10, 25, 50],
+                "ordering": false,
+            });
+        });
+    </script>
 </body>
 </html>

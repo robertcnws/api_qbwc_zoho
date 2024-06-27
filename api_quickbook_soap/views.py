@@ -42,6 +42,10 @@ def customer_query(request):
     global soap_customers
     return start_qbwc_query_request(request, 'Customer', soap_customers)
 
+@csrf_exempt
+def invoice_add_request(request):
+    return start_qbwc_invoice_add_request(request)
+
 
 #############################################
 # Home page
@@ -256,7 +260,14 @@ def match_one_customer_ajax(request):
 # SOAP requests
 #############################################
 
-    
+def start_qbwc_invoice_add_request(request):
+    if request.method == 'POST':
+        xml_data = request.body.decode('utf-8')
+        response_xml = process_qbwc_invoice_add_request(xml_data)
+        return HttpResponse(response_xml, content_type='text/xml')
+    else:
+        return HttpResponse(status=405)
+
 def start_qbwc_query_request(request, query_object_name, list_of_objects):
     if request.method == 'POST':
         xml_data = request.body.decode('utf-8')
@@ -289,10 +300,27 @@ def start_qbwc_query_request(request, query_object_name, list_of_objects):
         return HttpResponse(response_xml, content_type='text/xml')
     else:
         return HttpResponse(status=405)
-
-def partition_list_iter(lst, chunk_size):
-    for i in range(0, len(lst), chunk_size):
-        yield lst[i:i + chunk_size]
+        
+def process_qbwc_invoice_add_request(xml_data):
+    global counter
+    response = None
+    try:
+        xml_dict = xmltodict.parse(xml_data)
+        body = xml_dict['soap:Envelope']['soap:Body']
+        if 'authenticate' in body:
+            response = soap_service.handle_authenticate(body)
+        elif 'sendRequestXML' in body and counter == 0:
+            counter += 1
+            response = soap_service.generate_invoice_add_response()
+        elif 'closeConnection' in body:
+            counter = 0
+            response = soap_service.generate_close_connection_response()
+        else:
+            response = soap_service.generate_unsupported_request_response()
+        return response
+    except Exception as e:
+        logger.error(f"Error processing request: {e}")
+        return soap_service.generate_error_response(str(e))
 
 def process_qbwc_query_request(xml_data, query_object_name):
     global counter
@@ -310,20 +338,6 @@ def process_qbwc_query_request(xml_data, query_object_name):
             else:
                 response = soap_service.generate_customer_query_response()
             insert = True
-        # elif 'sendRequestXML' in body and counter == 0 and insert:
-        #     counter += 1
-        #     # # insert = False
-        #     # customers_to_add = sync_customers()
-        #     # print(f"ZOHO Customers: {customers_to_add}")
-        #     # response = soap_service.generate_customer_add_response_new_version(customers_to_add)
-        #     # # chunk_size = 20 
-        #     # # partitioned_list = list(partition_list_iter(customers_to_add, chunk_size))
-        #     # # for chunk in partitioned_list:
-        #     # #     response = soap_service.generate_customer_add_response(chunk)
-        #     # #     return 
-        #     items_to_add = sync_items()
-        #     print(f"ZOHO Items: {items_to_add}")
-        #     response = soap_service.generate_item_add_response(items_to_add)
         elif 'closeConnection' in body:
             counter = 0
             response = soap_service.generate_close_connection_response()
@@ -333,24 +347,3 @@ def process_qbwc_query_request(xml_data, query_object_name):
     except Exception as e:
         logger.error(f"Error processing request: {e}")
         return soap_service.generate_error_response(str(e))
-    
-def sync_customers():
-    global soap_customers
-    zoho_initial_customers = ZohoCustomer.objects.all()
-    zoho_final_customers = list(filter(not_duplicate_customers, zoho_initial_customers))
-    return zoho_final_customers
-
-def not_duplicate_customers(zoho_customer):
-    global soap_customers
-    return all(zoho_customer.email != obj['Email'] for obj in soap_customers)
-
-def sync_items():
-    global soap_items
-    zoho_initial_items = ZohoItem.objects.all()
-    zoho_final_items = list(filter(not_duplicate_items, zoho_initial_items))
-    return zoho_final_items
-
-def not_duplicate_items(zoho_item):
-    global soap_items
-    return all((zoho_item.name != obj['Name'] and zoho_item.sku != obj['SKU']) for obj in soap_items)
-    

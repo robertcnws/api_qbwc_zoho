@@ -39,26 +39,28 @@
                     <div class="heading">
                         <h5>Quick Actions</h5>
                     </div>
-                    <div class="list-group"
-                        <div list-group-item list-group-item-action>
-                                <div class="container mt-5">
-                                    <ul class="list-group">
-                                        <li class="list-group-item">
-                                            <a href="{% url 'api_quickbook_soap:matching_customers' %}" class="text-decoration-none">
-                                                <i class="fas fa-users me-2"></i> Customers
-                                            </a>
-                                        </li>
-                                        <li class="list-group-item">
-                                            <a href="{% url 'api_quickbook_soap:matching_items' %}" class="text-decoration-none">
-                                                <i class="fas fa-box me-2"></i> Items
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>                              
-                            </div>
-                        <div class="container text-end mt-3">
-                            <a href="{% url 'home' %}" class="btn btn-warning">Back</a>
-                        </div>
+                    
+                    <div class="container mt-5">
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <a href="{% url 'api_quickbook_soap:matching_customers' %}" class="text-decoration-none">
+                                    <i class="fas fa-users me-2"></i> Customers
+                                </a>
+                            </li>
+                            <li class="list-group-item">
+                                <a href="{% url 'api_quickbook_soap:matching_items' %}" class="text-decoration-none">
+                                    <i class="fas fa-box me-2"></i> Items
+                                </a>
+                            </li>
+                            <li class="list-group-item">
+                                <a href="#" class="text-decoration-none">
+                                    <i class="fas fa-file-invoice me-2"></i> Invoices
+                                </a>
+                            </li>
+                        </ul>
+                    </div> 
+                    <div class="container text-end mt-3">
+                        <a href="{% url 'home' %}" class="btn btn-warning">Back</a>
                     </div>
                 </div>
             </div>

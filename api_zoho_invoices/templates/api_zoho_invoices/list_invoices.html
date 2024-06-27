@@ -3,40 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invoices List</title>
+    <title>Zoho Invoices List</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
 </head>
 <body>
-    <div class="container mt-5">
+    <div class="container-fluid mt-5">
         <div class="row" role="alert">
             <div class="col-12 d-flex justify-content-between align-items-center mb-3">
-                <h1>Items List</h1>
-                <a href="{% url 'home' %}" class="btn btn-warning">Back</a>
+                <h1>Zoho Invoices List</h1>
+                <a href="{% url 'api_zoho:zoho_api_settings' %}" class="btn btn-warning">Back</a>
             </div>
         </div>
+
+        <div class="row mt-3">
+            <div class="col-12">
+                <p class="alert alert-info">
+                    There are {{ invoices|length }} invoices found.
+                </p>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-12">
+                <div class="table-responsive">
         
-        <table class="table table-bordered table-striped">
-            <thead class="thead-dark">
-                <tr>
-                    <th>No.</th>
-                    <th>ID</th>
-                    <th>Name</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for customer in customers %}
-                <tr>
-                    <td>{{ forloop.counter }}</td>
-                    <td>{{ customer.contact_id }}</td>
-                    <td>{{ customer.contact_name }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                    <table id="myTable" class="table table-bordered table-striped">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>No.</th>
+                                <th>Invoice ID</th>
+                                <th>Invoice Number</th>
+                                <th>Customer Name</th>
+                                <th>Items</th>
+                                <th>Invoice Date</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for invoice in invoices %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ invoice.invoice_id }}</td>
+                                <td>{{ invoice.invoice_number }}</td>
+                                <td>{{ invoice.customer_name }}</td>
+                                <td>
+                                    <ul>
+                                        {% for item in invoice.line_items %}
+                                            <li>{{ item.description }} (Total Item: <b>{{ item.item_total }})</b></li>
+                                        {% endfor %}
+                                    </ul>
+                                </td>
+                                <td>{{ invoice.date }}</td>
+                                <td>{{ invoice.total }}</td>
+                            </tr>
+                            {% endfor %} 
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- DataTables JS -->
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+    <script>
+        $(document).ready( function () {
+            $('#myTable').DataTable({
+                "paging": true,            
+                "pageLength": 10,          
+                "lengthMenu": [10, 25, 50],
+                "ordering": false,
+            });
+        } );
+    </script>
 </body>
 </html>

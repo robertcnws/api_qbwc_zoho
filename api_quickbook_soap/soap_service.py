@@ -1,4 +1,7 @@
 from api_zoho.models import AppConfig
+from api_zoho_invoices.models import ZohoFullInvoice
+from api_zoho_customers.models import ZohoCustomer
+from api_zoho_items.models import ZohoItem
 import logging
 import uuid
 import re
@@ -6,6 +9,10 @@ import re
 # Configura el logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
+
+##############################################
+############## Authentication ################
+##############################################
 
 def handle_authenticate(body):
     logger.debug("Handling authenticate request")
@@ -43,6 +50,10 @@ def handle_authenticate(body):
         </soap:Envelope>
         '''
         return response_xml
+    
+##############################################
+############## Customer Query ################
+##############################################
 
 def generate_customer_query_response():
     data_xml = '''<CustomerQueryRq requestID="1">
@@ -74,6 +85,10 @@ def generate_customer_query_response():
     
     return response
 
+##############################################
+################ Item Query ##################
+##############################################
+
 def generate_item_query_response():
     data_xml = '''<ItemInventoryQueryRq requestID="2">
                     <IncludeRetElement>ListID</IncludeRetElement>
@@ -99,7 +114,9 @@ def generate_item_query_response():
     
     return response
 
-
+##############################################
+############# Close Connection ###############
+##############################################
 
 def generate_close_connection_response():
     logger.debug("Generating close connection response")
@@ -113,6 +130,10 @@ def generate_close_connection_response():
         </soap:Body>
     </soap:Envelope>'''
     return response_xml
+
+##############################################
+############## Error Responses ###############
+##############################################
 
 def generate_unsupported_request_response():
     response_xml = '''<?xml version="1.0" encoding="utf-8"?>
@@ -143,6 +164,14 @@ def generate_error_response(error_message):
         </soap:Body>
     </soap:Envelope>'''
     return response_xml
+
+##############################################
+############### Add Elements #################
+##############################################
+
+##############################################
+############### Add Customer #################
+##############################################
 
 def generate_customer_add_response(zoho_final_customers):
     data_xml = ''
@@ -176,62 +205,9 @@ def generate_customer_add_response(zoho_final_customers):
                     </soap:Envelope>'''
     return response
 
-def generate_customer_add_response_new_version(zoho_final_customers):
-    data_xml = '''<InvoiceAddRq requestID="2">
-      <InvoiceAdd>
-        <CustomerRef>
-          <ListID>80000043-1718995153</ListID> <!-- Nombre completo del cliente -->
-        </CustomerRef>
-        <TxnDate>2024-06-21</TxnDate>
-        <RefNumber>1234</RefNumber>
-        <BillAddress>
-          <Addr1>John Doe</Addr1>
-          <Addr2>123 Main St.</Addr2>
-          <City>Mountain View</City>
-          <State>CA</State>
-          <PostalCode>94043</PostalCode>
-        </BillAddress>
-        <PONumber>5678</PONumber>
-        <TermsRef>
-          <FullName>Net 30</FullName>
-        </TermsRef>
-        <InvoiceLineAdd>
-          <ItemRef>
-            <FullName>...Fourth John Doe Item</FullName>
-          </ItemRef>
-          <Desc>Product 1 Description</Desc>
-          <Quantity>1</Quantity>
-          <Rate>100.00</Rate>
-        </InvoiceLineAdd>
-        <InvoiceLineAdd>
-          <ItemRef>
-            <FullName>...Fourth John Doe Item</FullName>
-          </ItemRef>
-          <Desc>Product 2 Description</Desc>
-          <Quantity>2</Quantity>
-          <Rate>50.00</Rate>
-        </InvoiceLineAdd>
-      </InvoiceAdd>
-    </InvoiceAddRq>'''
-    
-    request_xml = f'''<?qbxml version="8.0"?>
-                    <QBXML>
-                        <QBXMLMsgsRq onError="stopOnError">
-                            {data_xml}
-                        </QBXMLMsgsRq>
-                    </QBXML>'''
-    
-    response = f'''<?xml version="1.0" encoding="utf-8"?>
-                    <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:qb="http://developer.intuit.com/">
-                        <soap:Header/>
-                        <soap:Body>
-                            <qb:sendRequestXMLResponse>
-                                <qb:sendRequestXMLResult><![CDATA[{request_xml}]]></qb:sendRequestXMLResult>
-                            </qb:sendRequestXMLResponse>
-                        </soap:Body>
-                    </soap:Envelope>'''
-    return response
-
+##############################################
+################# Add Item ###################
+##############################################
 
 def generate_item_add_response(zoho_final_items):
     # data_xml = '''<ItemNonInventoryAddRq>
@@ -280,4 +256,78 @@ def generate_item_add_response(zoho_final_items):
                             </qb:sendRequestXMLResponse>
                         </soap:Body>
                     </soap:Envelope>'''
+    return response
+
+
+
+##############################################
+################ Add Invoice #################
+##############################################
+
+def generate_invoice_add_response():
+    
+    invoices = ZohoFullInvoice.objects.filter(inserted_in_qb=False)
+    
+    for i in range(len(invoices)):
+        
+        items_xml = ''
+        
+        for item in invoices[i].line_items:
+            
+            zoho_item = ZohoItem.objects.get(name=item.name)  
+            
+            if zoho_item.qb_list_id != '':
+                items_xml += f'''<InvoiceLineAdd>
+                                <ItemRef>
+                                    <ListID>{zoho_item.qb_list_id}</ListID>
+                                </ItemRef>
+                                <Desc>{item.description}</Desc>
+                                <Quantity>{item.quantity}</Quantity>
+                                <Rate>{item.rate}</Rate>
+                            </InvoiceLineAdd>
+                            '''
+        
+        zoho_customer = ZohoCustomer.objects.get(customer_id=invoices[i].customer_id)
+        if zoho_customer.qb_list_id != '':
+            data_xml = f'''<InvoiceAddRq requestID="{i + 2}">
+                            <InvoiceAdd>
+                                <CustomerRef>   
+                                    <ListID>{zoho_customer.qb_list_id}</ListID>
+                                </CustomerRef>  
+                                <TxnDate>{invoices[i].date}</TxnDate>
+                                <RefNumber>{invoices[i].invoice_number}</RefNumber>
+                                <BillAddress>
+                                    <Addr1>{invoices[i].billing_address.street}</Addr1>
+                                    <Addr2>{invoices[i].billing_address.address}</Addr2>
+                                    <City>{invoices[i].billing_address.city}</City>
+                                    <State>{invoices[i].billing_address.state}</State>
+                                    <PostalCode>{invoices[i].billing_address.zip}</PostalCode>
+                                </BillAddress>
+                                <PONumber>{invoices[i].invoice_number}</PONumber>
+                                <TermsRef>
+                                    <FullName>{invoices[i].terms}</FullName>
+                                </TermsRef>
+                                {items_xml}
+                            </InvoiceAdd>
+                        </InvoiceAddRq>'''
+        invoices[i].inserted_in_qb = True
+        invoices[i].save()  
+    
+    request_xml = f'''<?qbxml version="8.0"?>
+                    <QBXML>
+                        <QBXMLMsgsRq onError="stopOnError">
+                            {data_xml}
+                        </QBXMLMsgsRq>
+                    </QBXML>'''
+    
+    response = f'''<?xml version="1.0" encoding="utf-8"?>
+                    <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:qb="http://developer.intuit.com/">
+                        <soap:Header/>
+                        <soap:Body>
+                            <qb:sendRequestXMLResponse>
+                                <qb:sendRequestXMLResult><![CDATA[{request_xml}]]></qb:sendRequestXMLResult>
+                            </qb:sendRequestXMLResponse>
+                        </soap:Body>
+                    </soap:Envelope>'''
+    
     return response
