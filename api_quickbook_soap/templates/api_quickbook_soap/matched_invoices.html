@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QBWC - Zoho Invoices List</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+</head>
+<body>
+    <div class="container-fluid mt-5">
+        <div class="row" role="alert">
+            <div class="col-12 d-flex justify-content-between align-items-center mb-3">
+                <h1>QBWC - Zoho Invoices List (Matched & Unmatched)</h1>
+                <a href="{% url 'api_quickbook_soap:quickbook_api_settings' %}" class="btn btn-warning">Back</a>
+            </div>
+        </div>
+
+        <div class="row mt-3">
+            <div class="row col-12">
+                <div class="col-4">
+                    <p class="alert alert-info">
+                        There are <b>{{ invoices|length }}</b> invoices found.
+                    </p>
+                </div>
+                <div class="col-4">
+                    <p class="alert alert-success">
+                        There are <b>{{ matched_number }}</b> matched invoices found.
+                    </p>
+                </div>
+                <div class="col-4">
+                    <p class="alert alert-warning">
+                        There are <b>{{ unmatched_number }}</b> unmatched invoices found.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-12">
+                <div class="table-responsive">
+        
+                    <table id="myTable" class="table table-bordered table-striped">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>No.</th>
+                                <th>Invoice ID</th>
+                                <th>Info General</th>
+                                <th>Info Items</th>
+                                <th>Unmatched Customer</th>
+                                <th>Unmatched Items</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for invoice in invoices %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ invoice.invoice_id }}</td>
+                                <td>
+                                    <ul>
+                                        <li>Invoice number: {{ invoice.invoice_number }}</li>
+                                        <li>Customer name: {{ invoice.customer_name }}</li>
+                                        <li>Invoice date: {{ invoice.date }}</li>
+                                        <li>Amount: {{ invoice.total }}</li>
+                                    </ul>
+                                </td>
+                                <td>
+                                    <ul>
+                                        {% for item in invoice.line_items %}
+                                            <li>{{ item.description }} (Total Item: <b>{{ item.item_total }})</b></li>
+                                        {% endfor %}
+                                    </ul>
+                                </td>
+                                <td>
+                                    {% if invoice.customer_unmatched %}
+                                        <ul>
+                                            <li>Customer name: {{ invoice.customer_unmatched.name }}</li>
+                                            <li>Customer email: {{ invoice.customer_unmatched.email }}</li>
+                                        </ul>
+                                    {% else %}
+                                        <p class="alert alert-success">Matched</p>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if invoice.items_unmatched %}
+                                        <ul>
+                                            {% for item in invoice.items_unmatched %}
+                                                <li>{{ item.description }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% else %}
+                                        <p class="alert alert-success">Matched</p>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %} 
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- DataTables JS -->
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+    <script>
+        $(document).ready( function () {
+            $('#myTable').DataTable({
+                "paging": true,            
+                "pageLength": 10,          
+                "lengthMenu": [10, 25, 50],
+                "ordering": false,
+            });
+        } );
+    </script>
+</body>
+</html>

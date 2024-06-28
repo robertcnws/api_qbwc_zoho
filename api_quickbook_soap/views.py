@@ -4,6 +4,7 @@ from django.views.decorators.http import require_POST
 from django.shortcuts import render, get_object_or_404
 from api_zoho_customers.models import ZohoCustomer
 from api_zoho_items.models import ZohoItem
+from api_zoho_invoices.models import ZohoFullInvoice
 from .models import QbItem, QbCustomer
 import difflib
 import api_quickbook_soap.soap_service as soap_service
@@ -167,6 +168,20 @@ def matched_customers(request):
                     matched_customers.append(matched)
     context = {'matched_customers': matched_customers}
     return render(request, 'api_quickbook_soap/matched_customers.html', context)
+
+
+def matched_invoices(request):
+    
+    invoices = ZohoFullInvoice.objects.all()
+    matched_number = len([invoice for invoice in invoices if invoice.inserted_in_qb])
+    unmatched_number = len(invoices) - matched_number
+    
+    context = {
+        'invoices': invoices,
+        'matched_number': matched_number,
+        'unmatched_number': unmatched_number,
+    }
+    return render(request, 'api_quickbook_soap/matched_invoices.html', context=context)
 
 
 #############################################

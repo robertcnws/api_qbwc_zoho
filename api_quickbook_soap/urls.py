@@ -16,4 +16,5 @@ urlpatterns = [
     path("match_one_customer_ajax/", views.match_one_customer_ajax, name="match_one_customer_ajax"),
     path("matched_items/", views.matched_items, name="matched_items"),
     path("matched_customers/", views.matched_customers, name="matched_customers"),
+    path("matched_invoices/", views.matched_invoices, name="matched_invoices"),
 ]
