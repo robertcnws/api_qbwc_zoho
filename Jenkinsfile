@@ -49,7 +49,7 @@ pipeline {
                         '''
 
                         // Iniciar los servicios usando docker-compose
-                        sh 'docker-compose up -d --no-recreate --no-build nginx django'
+                        sh 'docker-compose up -d --no-deps --build nginx django'
 
                         // Reiniciar Nginx para asegurar que los cambios sean aplicados
                         sh 'docker exec nginx_server nginx -s reload || true'
