@@ -41,17 +41,18 @@ pipeline {
                         sh '''
                             docker network inspect api_qbwc_zoho_network >/dev/null 2>&1 || docker network create api_qbwc_zoho_network
                         '''
-                        // Detener servicios
+
+                        // Detener y eliminar contenedores existentes si están en ejecución
                         sh '''
-                            docker stop project_api && echo "Contenedor project_api detenido." || echo "El contenedor project_api no está en ejecución o no existe."
+                            docker stop project_api nginx_server jenkins_server || true
+                            docker rm project_api nginx_server jenkins_server || true
                         '''
-                        sh '''
-                            docker rm -f project_api 2>/dev/null || true
-                        '''
-                        // Iniciar servicios
-                        sh '''
-                            docker-compose up -d
-                        '''
+
+                        // Iniciar los servicios usando docker-compose
+                        sh 'docker-compose up -d'
+
+                        // Reiniciar Nginx para asegurar que los cambios sean aplicados
+                        sh 'docker exec nginx_server nginx -s reload || true'
                     }
                 }
             }
