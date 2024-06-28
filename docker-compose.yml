@@ -64,5 +64,5 @@ volumes:
 
 networks:
   api_qbwc_zoho_network:
-    # external: true
-    driver: bridge
+    external: true
+    # driver: bridge
