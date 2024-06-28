@@ -7,33 +7,54 @@ from api_zoho_items.models import ZohoItem
 from django.utils.dateparse import parse_datetime 
 import requests
 import json
-import os
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
 
 def list_items(request):
     app_config = AppConfig.objects.first()
-    headers = api_zoho_views.config_headers(request)
-    print(headers)
+    headers = api_zoho_views.config_headers(request)  # Asegúrate de que esto esté configurado correctamente
+    params = {
+        'page': 1,       # Página inicial
+        'per_page': 200  # Cantidad de resultados por página, ajusta según la API de Zoho
+    }
     url = f'{settings.ZOHO_URL_READ_ITEMS}?organization_id={app_config.zoho_org_id}'
-    response = requests.get(url, headers=headers)
-    # if response.status_code == 401:
-    #     api_zoho_views.get_refresh_token(request)
-    #     headers = api_zoho_views.config_headers(request)
-    #     print(headers)
-    #     response = requests.get(url, headers=headers)
-    if response.status_code == 200:
-        response.raise_for_status()
-        items = response.json()
-        print(items)
-        for item in items.get('items'):
-            data = json.loads(item) if isinstance(item, str) else item
-            new_item = create_item_instance(data) 
-            new_item.save()
-        context = {
-            'items': ZohoItem.objects.all() 
-        }
-        return render(request, 'api_zoho_items/list_items.html', context)
-    else:
-        return JsonResponse({"error": "Failed to fetch invoices"}), response.status_code
+    items_to_save = []
+    items_saved = ZohoItem.objects.all()
+    
+    while True:
+        try:
+            response = requests.get(url, headers=headers, params=params)
+            response.raise_for_status()
+            items = response.json()
+            # logger.info(f'Items Page {params["page"]}: {items}')
+            
+            for item in items.get('items', []):
+                data = json.loads(item) if isinstance(item, str) else item
+                new_item = create_item_instance(data)
+                value = list(filter(lambda x: x.item_id == new_item.item_id, items_saved))
+                if len(value) == 0:
+                    items_to_save.append(new_item)
+            # Verifica si hay más páginas para obtener
+            if 'page_context' in items and 'has_more_page' in items['page_context'] and items['page_context']['has_more_page']:
+                params['page'] += 1  # Avanza a la siguiente página
+            else:
+                break  # Sal del bucle si no hay más páginas
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error fetching customers: {e}")
+            return JsonResponse({"error": "Failed to fetch customers"}), 500
+    for item in items_to_save:
+        value = list(filter(lambda x: x.item_id == item.item_id, items_saved))
+        if len(value) != 0:
+            item.save()  
+    # Después de obtener todos los clientes, renderiza la plantilla con la lista de clientes
+    items_list = ZohoItem.objects.all()
+    
+    context = {'items': items_list}
+    return render(request, 'api_zoho_items/list_items.html', context)
+
     
 
 def create_item_instance(data):

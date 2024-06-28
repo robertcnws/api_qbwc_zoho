@@ -7,27 +7,54 @@ from api_zoho_customers.models import ZohoCustomer
 from django.utils.dateparse import parse_datetime  
 import requests
 import json
-import os
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
 
 def list_customers(request):
     app_config = AppConfig.objects.first()
-    headers = api_zoho_views.config_headers(request)
-    print(headers)
+    headers = api_zoho_views.config_headers(request)  # Asegúrate de que esto esté configurado correctamente
+    params = {
+        'page': 1,       # Página inicial
+        'per_page': 200  # Cantidad de resultados por página, ajusta según la API de Zoho
+    }
     url = f'{settings.ZOHO_URL_READ_CUSTOMERS}?organization_id={app_config.zoho_org_id}'
-    response = requests.get(url, headers=headers)
-    response.raise_for_status()
-    if response.status_code == 200:
-        customers = response.json()
-        for customer in customers.get('contacts'):
-            data = json.loads(customer) if isinstance(customer, str) else customer
-            new_customer = create_customer_instance(data) 
-            new_customer.save()
-        context = {
-            'customers': ZohoCustomer.objects.all() 
-        }  
-        return render(request, 'api_zoho_customers/list_customers.html', context)
-    else:
-        return JsonResponse({"error": "Failed to fetch invoices"}), response.status_code
+    customers_to_save = []
+    customers_saved = ZohoCustomer.objects.all()
+    
+    while True:
+        try:
+            response = requests.get(url, headers=headers, params=params)
+            response.raise_for_status()
+            customers = response.json()
+            # logger.info(f'Customers Page {params["page"]}: {customers}')
+            
+            for customer in customers.get('contacts', []):
+                data = json.loads(customer) if isinstance(customer, str) else customer
+                new_customer = create_customer_instance(data)
+                value = list(filter(lambda x: x.contact_id == new_customer.contact_id, customers_saved))
+                # logger.info(f'Existing Customer: {new_customer.contact_id} - {new_customer.contact_name}')
+                if len(value) == 0 and new_customer.status == 'active':
+                    customers_to_save.append(new_customer)
+            
+            # Verifica si hay más páginas para obtener
+            if 'page_context' in customers and 'has_more_page' in customers['page_context'] and customers['page_context']['has_more_page']:
+                params['page'] += 1  # Avanza a la siguiente página
+            else:
+                break  # Sal del bucle si no hay más páginas
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error fetching customers: {e}")
+            return JsonResponse({"error": "Failed to fetch customers"}), 500
+    for customer in customers_to_save:
+        value = list(filter(lambda x: x.contact_id == customer.contact_id, customers_saved))
+        if len(value) != 0:
+            customer.save()  
+    # Después de obtener todos los clientes, renderiza la plantilla con la lista de clientes
+    customers_list = ZohoCustomer.objects.all()
+    context = {'customers': customers_list}
+    return render(request, 'api_zoho_customers/list_customers.html', context)
     
 
 def create_customer_instance(data):

@@ -8,40 +8,56 @@ from api_zoho.models import AppConfig
 from api_zoho_invoices.models import ZohoFullInvoice 
 import requests
 import json
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
 
 def list_invoices(request):
     app_config = AppConfig.objects.first()
     headers = api_zoho_views.config_headers(request)
-    print(headers)
+    params = {
+        'page': 1,       # Página inicial
+        'per_page': 200  # Cantidad de resultados por página, ajusta según la API de Zoho
+    }
     url = f'{settings.ZOHO_URL_READ_INVOICES}?organization_id={app_config.zoho_org_id}'
-    response = requests.get(url, headers=headers)
-    # if response.status_code == 401:
-    #     api_zoho_views.get_refresh_token(request)
-    #     headers = api_zoho_views.config_headers(request)
-    #     print(headers)
-    #     response = requests.get(url, headers=headers)
-    if response.status_code == 200:
-        response.raise_for_status()
-        invoices = response.json()
-        print(invoices)
-        for invoice in invoices.get('invoices'):
-            data = json.loads(invoice) if isinstance(invoice, str) else invoice
-            url = f'{settings.ZOHO_URL_READ_INVOICES}/{data.get('invoice_id')}/?organization_id={app_config.zoho_org_id}'
-            response = requests.get(url, headers=headers)
-            if response.status_code == 200:
-                response.raise_for_status()
-                full_invoice = response.json()
-                data = json.loads(full_invoice.get('invoice')) if isinstance(full_invoice.get('invoice'), str) else full_invoice.get('invoice')
-                print(data)
-                new_invoice = create_invoice_instance(data) 
-                new_invoice.save()
-        invoices = ZohoFullInvoice.objects.all()
-        context = {
-            'invoices': ZohoFullInvoice.objects.all()
-        }
-        return render(request, 'api_zoho_invoices/list_invoices.html', context)
-    else:
-        return JsonResponse({"error": "Failed to fetch invoices"}), response.status_code
+    invoices_to_save = []
+    invoices_saved = ZohoFullInvoice.objects.all()
+    while True:
+        try:
+            response = requests.get(url, headers=headers, params=params)
+            response.raise_for_status()
+            invoices = response.json()
+            
+            for invoice in invoices.get('invoices', []):
+                data = json.loads(invoice) if isinstance(invoice, str) else invoice
+                get_url = f'{settings.ZOHO_URL_READ_INVOICES}/{data.get('invoice_id')}/?organization_id={app_config.zoho_org_id}'
+                response = requests.get(get_url, headers=headers)
+                if response.status_code == 200:
+                    response.raise_for_status()
+                    full_invoice = response.json()
+                    data = json.loads(full_invoice.get('invoice')) if isinstance(full_invoice.get('invoice'), str) else full_invoice.get('invoice')
+                    new_invoice = create_invoice_instance(data)
+                    value = list(filter(lambda x: x.invoice_id == new_invoice.invoice_id, invoices_saved))
+                    if len(value) == 0:
+                        invoices_to_save.append(new_invoice)
+            # Verifica si hay más páginas para obtener
+            if 'page_context' in invoices and 'has_more_page' in invoices['page_context'] and invoices['page_context']['has_more_page']:
+                params['page'] += 1  # Avanza a la siguiente página
+            else:
+                break  # Sal del bucle si no hay más páginas
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error fetching customers: {e}")
+            return JsonResponse({"error": "Failed to fetch customers"}), 500
+    for invoice in invoices_to_save:
+        value = list(filter(lambda x: x.invoice_id == invoice.invoice_id, invoices_saved))
+        if len(value) != 0:
+            invoice.save()  
+    # Después de obtener todos los clientes, renderiza la plantilla con la lista de clientes
+    invoice_list = ZohoFullInvoice.objects.all()
+    context = {'invoices': invoice_list}
+    return render(request, 'api_zoho_invoices/list_invoices.html', context)
     
 
 def create_invoice_instance(data):
