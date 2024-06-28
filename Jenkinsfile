@@ -49,10 +49,10 @@ pipeline {
                         '''
 
                         // Iniciar los servicios usando docker-compose
-                        sh 'docker-compose up -d --no-deps --build nginx django'
+                        sh 'docker-compose -f docker-compose.yml up -d --build'
 
-                        // Reiniciar Nginx para asegurar que los cambios sean aplicados
-                        sh 'docker exec nginx_server nginx -s reload || true'
+                        // // Reiniciar Nginx para asegurar que los cambios sean aplicados
+                        // sh 'docker exec nginx_server nginx -s reload || true'
                     }
                 }
             }
