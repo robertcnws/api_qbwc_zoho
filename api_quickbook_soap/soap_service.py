@@ -175,7 +175,9 @@ def generate_error_response(error_message):
 ##############################################
 
 def generate_customer_add_response(zoho_final_customers):
+    
     data_xml = ''
+    
     for i in range(len(zoho_final_customers) - 20, len(zoho_final_customers)):
         data_xml += f'''<CustomerAddRq requestID="{i + 2}">
                             <CustomerAdd>
@@ -320,6 +322,8 @@ def generate_invoice_add_response():
     
     data_xml = ''
     
+    response = None
+    
     for i in range(len(invoices)):
         
         items_xml = ''
@@ -382,8 +386,7 @@ def generate_invoice_add_response():
             invoices[i].items_unmatched = items_unmatched
             invoices[i].inserted_in_qb = False
             invoices[i].save()
-            return None
-                
+            
         zoho_customer = ZohoCustomer.objects.get(contact_id=invoices[i].customer_id)
         
         logger.debug(f'Customer: {zoho_customer}')
@@ -408,51 +411,33 @@ def generate_invoice_add_response():
             logger.debug(f'Zip Code: {zip_code}')
             logger.debug(f'Terms: {terms}')
             
-            
-            data_xml += f'''<InvoiceAddRq requestID="{i + 2}">
-                            <InvoiceAdd>
-                                <CustomerRef>   
-                                    <ListID>{zoho_customer.qb_list_id}</ListID>
-                                </CustomerRef>  
-                                <TxnDate>{invoices[i].date}</TxnDate>
-                                <RefNumber>{invoices[i].invoice_number}</RefNumber>
-                                <BillAddress>
-                                    <Addr1>{street}</Addr1>
-                                    <Addr2>{address}</Addr2>
-                                    <City>{city}</City>
-                                    <State>{state}</State>
-                                    <PostalCode>{zip_code}</PostalCode>
-                                </BillAddress>
-                                <PONumber>{invoices[i].invoice_number}</PONumber>
-                                <TermsRef>
-                                    <FullName>{terms}</FullName>
-                                </TermsRef>
-                                {items_xml}
-                            </InvoiceAdd>
-                        </InvoiceAddRq>'''
+            if items_xml != '':
+                
+                data_xml += f'''<InvoiceAddRq requestID="{i + 2}">
+                                <InvoiceAdd>
+                                    <CustomerRef>   
+                                        <ListID>{zoho_customer.qb_list_id}</ListID>
+                                    </CustomerRef>  
+                                    <TxnDate>{invoices[i].date}</TxnDate>
+                                    <RefNumber>{invoices[i].invoice_number}</RefNumber>
+                                    <BillAddress>
+                                        <Addr1>{street}</Addr1>
+                                        <Addr2>{address}</Addr2>
+                                        <City>{city}</City>
+                                        <State>{state}</State>
+                                        <PostalCode>{zip_code}</PostalCode>
+                                    </BillAddress>
+                                    <PONumber>{invoices[i].invoice_number}</PONumber>
+                                    <TermsRef>
+                                        <FullName>{terms}</FullName>
+                                    </TermsRef>
+                                    {items_xml}
+                                </InvoiceAdd>
+                            </InvoiceAddRq>'''
                         
             logger.debug(f'Data XML: {data_xml}')
-            
             invoices[i].inserted_in_qb = True
-            invoices[i].save()  
-        
-            request_xml = f'''<?qbxml version="8.0"?>
-                            <QBXML>
-                                <QBXMLMsgsRq onError="stopOnError">
-                                    {data_xml}
-                                </QBXMLMsgsRq>
-                            </QBXML>'''
-            
-            response = f'''<?xml version="1.0" encoding="utf-8"?>
-                            <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:qb="http://developer.intuit.com/">
-                                <soap:Header/>
-                                <soap:Body>
-                                    <qb:sendRequestXMLResponse>
-                                        <qb:sendRequestXMLResult><![CDATA[{request_xml}]]></qb:sendRequestXMLResult>
-                                    </qb:sendRequestXMLResponse>
-                                </soap:Body>
-                            </soap:Envelope>'''
-            return response
+            invoices[i].save() 
         else:
             logger.debug(f'Customer {zoho_customer} has no QB List ID')
             customer_unmatched = {
@@ -461,8 +446,26 @@ def generate_invoice_add_response():
                 'reason': 'Customer is not matched in QuickBooks'
             }
             customers_unmatched.append(customer_unmatched)
-            invoices[i].customers_unmatched = customers_unmatched
+            invoices[i].customer_unmatched = customers_unmatched
             invoices[i].inserted_in_qb = False
             invoices[i].save()
-            return None
-    return None
+            
+    if data_xml != '':
+        
+        request_xml = f'''<?qbxml version="8.0"?>
+                                <QBXML>
+                                    <QBXMLMsgsRq onError="stopOnError">
+                                        {data_xml}
+                                    </QBXMLMsgsRq>
+                                </QBXML>'''
+                
+        response = f'''<?xml version="1.0" encoding="utf-8"?>
+                                <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:qb="http://developer.intuit.com/">
+                                    <soap:Header/>
+                                    <soap:Body>
+                                        <qb:sendRequestXMLResponse>
+                                            <qb:sendRequestXMLResult><![CDATA[{request_xml}]]></qb:sendRequestXMLResult>
+                                        </qb:sendRequestXMLResponse>
+                                    </soap:Body>
+                                </soap:Envelope>'''
+    return response

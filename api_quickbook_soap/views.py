@@ -174,12 +174,16 @@ def matched_invoices(request):
     
     invoices = ZohoFullInvoice.objects.all()
     matched_number = len([invoice for invoice in invoices if invoice.inserted_in_qb])
-    unmatched_number = len(invoices) - matched_number
+    total_items_unmatched = len([invoice for invoice in invoices if len(invoice.items_unmatched) > 0])
+    total_customers_unmatched = len([invoice for invoice in invoices if len(invoice.customer_unmatched) > 0])
+    unmatched_number = max(total_items_unmatched, total_customers_unmatched)
+    unprocessed_number = len([invoice for invoice in invoices if not invoice.inserted_in_qb]) - unmatched_number
     
     context = {
         'invoices': invoices,
         'matched_number': matched_number,
         'unmatched_number': unmatched_number,
+        'unprocessed_number': unprocessed_number,
     }
     return render(request, 'api_quickbook_soap/matched_invoices.html', context=context)
 

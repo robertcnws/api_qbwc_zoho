@@ -19,18 +19,23 @@
 
         <div class="row mt-3">
             <div class="row col-12">
-                <div class="col-4">
+                <div class="col-3">
                     <p class="alert alert-info">
                         There are <b>{{ invoices|length }}</b> invoices found.
                     </p>
                 </div>
-                <div class="col-4">
+                <div class="col-3">
+                    <p class="alert alert-warning">
+                        There are <b>{{ unprocessed_number }}</b> invoices not processed.
+                    </p>
+                </div>
+                <div class="col-3">
                     <p class="alert alert-success">
                         There are <b>{{ matched_number }}</b> matched invoices found.
                     </p>
                 </div>
-                <div class="col-4">
-                    <p class="alert alert-warning">
+                <div class="col-3">
+                    <p class="alert alert-danger">
                         There are <b>{{ unmatched_number }}</b> unmatched invoices found.
                     </p>
                 </div>
@@ -54,46 +59,61 @@
                         </thead>
                         <tbody>
                             {% for invoice in invoices %}
-                            <tr>
-                                <td>{{ forloop.counter }}</td>
-                                <td>{{ invoice.invoice_id }}</td>
-                                <td>
-                                    <ul>
-                                        <li>Invoice number: {{ invoice.invoice_number }}</li>
-                                        <li>Customer name: {{ invoice.customer_name }}</li>
-                                        <li>Invoice date: {{ invoice.date }}</li>
-                                        <li>Amount: {{ invoice.total }}</li>
-                                    </ul>
-                                </td>
-                                <td>
-                                    <ul>
-                                        {% for item in invoice.line_items %}
-                                            <li>{{ item.description }} (Total Item: <b>{{ item.item_total }})</b></li>
-                                        {% endfor %}
-                                    </ul>
-                                </td>
-                                <td>
-                                    {% if invoice.customer_unmatched %}
+                            {% if invoice.customer_unmatched or invoice.items_unmatched %}
+                                <tr style="background-color: rgba(255, 0, 0, 0.1);">
+                            {% elif invoice.inserted_in_qb %}
+                                <tr style="background-color: rgba(0, 255, 0, 0.1);">
+                            {% else %}
+                                <tr style="background-color: rgba(255, 255, 0, 0.1);">
+                            {% endif %}
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ invoice.invoice_id }}</td>
+                                    <td>
                                         <ul>
-                                            <li>Customer name: {{ invoice.customer_unmatched.name }}</li>
-                                            <li>Customer email: {{ invoice.customer_unmatched.email }}</li>
+                                            <li>Invoice number: {{ invoice.invoice_number }}</li>
+                                            <li>Customer name: {{ invoice.customer_name }}</li>
+                                            <li>Invoice date: {{ invoice.date }}</li>
+                                            <li>Amount: {{ invoice.total }}</li>
                                         </ul>
-                                    {% else %}
-                                        <p class="alert alert-success">Matched</p>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if invoice.items_unmatched %}
+                                    </td>
+                                    <td>
                                         <ul>
-                                            {% for item in invoice.items_unmatched %}
-                                                <li>{{ item.description }}</li>
+                                            {% for item in invoice.line_items %}
+                                                <li>{{ item.description }} (Total Item: <b>{{ item.item_total }})</b></li>
                                             {% endfor %}
                                         </ul>
-                                    {% else %}
-                                        <p class="alert alert-success">Matched</p>
-                                    {% endif %}
-                                </td>
-                            </tr>
+                                    </td>
+                                    <td>
+                                        {% if invoice.customer_unmatched %}
+                                            <ul>
+                                               {% for item in invoice.customer_unmatched %}
+                                                    <li>{{ item.zoho_customer_unmatched }}</li>
+                                                    <li>ID: {{ item.zoho_customer_id }}</li>
+                                                    <li>Reason: <b>{{ item.reason }}</b></li>
+                                                {% endfor %}
+                                            </ul>
+                                        {% elif not invoice.inserted_in_qb %}
+                                            <p class="alert alert-warning" style="text-align: center;">Not processed</p>
+                                        {% else %}
+                                            <p class="alert alert-success" style="text-align: center;"><b>Matched</b></p>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if invoice.items_unmatched %}
+                                            <ul>
+                                                {% for item in invoice.items_unmatched %}
+                                                    <li>{{ item.zoho_item_unmatched }}</li>
+                                                    <li>ID: {{ item.zoho_item_id }}</li>
+                                                    <li>Reason: <b>{{ item.reason }}</b></li>
+                                                {% endfor %}
+                                            </ul>
+                                        {% elif not invoice.inserted_in_qb %}
+                                            <p class="alert alert-warning" style="text-align: center;">Not processed</p>
+                                        {% else %}
+                                            <p class="alert alert-success" style="text-align: center;"><b>Matched</b></p>
+                                        {% endif %}
+                                    </td>
+                                </tr>
                             {% endfor %} 
                         </tbody>
                     </table>
