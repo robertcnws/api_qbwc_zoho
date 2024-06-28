@@ -37,6 +37,10 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry('https://index.docker.io/v1/') {
+                        // Crear la red si no existe
+                        sh '''
+                            docker network inspect api_qbwc_zoho_network >/dev/null 2>&1 || docker network create api_qbwc_zoho_network
+                        '''
                         // Detener servicios
                         sh 'docker stop project_api && echo "Contenedor project_api detenido." || echo "El contenedor project_api no está en ejecución o no existe."'
                         sh 'docker rm -f project_api 2>/dev/null || true'
