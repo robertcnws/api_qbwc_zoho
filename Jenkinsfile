@@ -44,8 +44,8 @@ pipeline {
 
                         // Detener y eliminar contenedores existentes si están en ejecución
                         sh '''
-                            docker stop project_api nginx_server jenkins_server || true
-                            docker rm project_api nginx_server jenkins_server || true
+                            docker stop project_api nginx_server || true
+                            docker rm project_api nginx_server || true
                         '''
 
                         // Iniciar los servicios usando docker-compose
