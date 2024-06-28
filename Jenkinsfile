@@ -49,7 +49,7 @@ pipeline {
                         '''
 
                         // Iniciar los servicios usando docker-compose
-                        sh 'docker-compose up -d'
+                        sh 'docker-compose up -d --no-recreate --no-build nginx project_api'
 
                         // Reiniciar Nginx para asegurar que los cambios sean aplicados
                         sh 'docker exec nginx_server nginx -s reload || true'
