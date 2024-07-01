@@ -26,10 +26,10 @@ RUN apt-get update && \
     curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && \
     chmod +x /usr/local/bin/docker-compose
 
-# # Crea el grupo 'docker' si no existe
-# RUN sudo groupadd -g 1001 docker
+# Crea el grupo 'docker' si no existe
+RUN sudo groupadd -g 1001 docker
 
-# # Crear un usuario Jenkins y agregarlo al grupo Docker
-# RUN sudo usermod -aG docker jenkins
+# Crear un usuario Jenkins y agregarlo al grupo Docker
+RUN sudo usermod -aG docker jenkins
 
-# USER jenkins
+USER jenkins
