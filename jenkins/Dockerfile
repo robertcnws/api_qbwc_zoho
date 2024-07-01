@@ -32,4 +32,9 @@ RUN sudo groupadd -g 1001 docker
 # Crear un usuario Jenkins y agregarlo al grupo Docker
 RUN sudo usermod -aG docker jenkins
 
+# RUN sudo chown root:docker /var/run/docker.sock
+# RUN sudo chmod 660 /var/run/docker.sock
+# RUN ls -l /var/run/docker.sock
+
+# Cambiar al usuario jenkins
 USER jenkins
