@@ -77,10 +77,12 @@
                                     <td class="centered-cell">{{ invoice.invoice_id }}</td>
                                     <td class="centered-cell">
                                         <ul>
-                                            <li>Invoice number: {{ invoice.invoice_number }}</li>
-                                            <li>Customer name: {{ invoice.customer_name }}</li>
-                                            <li>Invoice date: {{ invoice.date }}</li>
-                                            <li>Amount: {{ invoice.total }}</li>
+                                            <li>
+                                                Invoice number: <br/><b>{{ invoice.invoice_number }}</b><br/>
+                                                Customer name: <br/><b>{{ invoice.customer_name }}</b><br/>
+                                                Invoice date: <br/><b>{{ invoice.date }}</b><br/>
+                                                Amount: <b>{{ invoice.total }}</b>
+                                            </li>
                                         </ul>
                                     </td>
                                     <td class="centered-cell">
@@ -94,9 +96,11 @@
                                         {% if invoice.customer_unmatched %}
                                             <ul>
                                                {% for item in invoice.customer_unmatched %}
-                                                    <li>{{ item.zoho_customer_unmatched }}</li>
-                                                    <li>ID: {{ item.zoho_customer_id }}</li>
-                                                    <li>Reason: <b>{{ item.reason }}</b></li>
+                                                    <li>
+                                                        {{ item.zoho_customer_unmatched }}<br/>
+                                                        ID: <b>{{ item.zoho_customer_id }}</b><br/>
+                                                        Reason: <b>{{ item.reason }}</b>
+                                                    </li>
                                                 {% endfor %}
                                             </ul>
                                         {% elif not invoice.inserted_in_qb %}
@@ -109,9 +113,11 @@
                                         {% if invoice.items_unmatched %}
                                             <ul>
                                                 {% for item in invoice.items_unmatched %}
-                                                    <li>{{ item.zoho_item_unmatched }}</li>
-                                                    <li>ID: {{ item.zoho_item_id }}</li>
-                                                    <li>Reason: <b>{{ item.reason }}</b></li>
+                                                    <li>
+                                                        {{ item.zoho_item_unmatched }}<br/>
+                                                        ID: <b>{{ item.zoho_item_id }}</b><br/>
+                                                        Reason: <b>{{ item.reason }}</b>
+                                                    </li>
                                                 {% endfor %}
                                             </ul>
                                         {% elif not invoice.inserted_in_qb %}

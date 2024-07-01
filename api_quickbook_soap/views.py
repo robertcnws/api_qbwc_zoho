@@ -300,13 +300,17 @@ def start_qbwc_query_request(request, query_object_name, list_of_objects):
                 list_of_objects = [elem for elem in elements_query_rs]
                 print(f"SOAP Elements ({query_object_name}): {list_of_objects}")
                 if query_object_name == 'ItemInventory':
+                    items_saved = QbItem.objects.all()
                     for item in list_of_objects:
                         qb_item = QbItem.objects.create(
                             list_id=item['ListID'], 
                             name=item['Name'] if 'Name' in item else '',
                         )
-                        qb_item.save()
+                        existing_values = list(filter(lambda x: x.list_id == qb_item.list_id, items_saved))
+                        if len(existing_values) == 0:
+                            qb_item.save()
                 elif query_object_name == 'Customer':
+                    customers_saved = QbCustomer.objects.all()
                     for customer in list_of_objects:
                         qb_customer = QbCustomer.objects.create(
                             list_id=customer['ListID'], 
@@ -314,7 +318,9 @@ def start_qbwc_query_request(request, query_object_name, list_of_objects):
                             email=customer['Email'] if 'Email' in customer else '', 
                             phone=customer['Phone'] if 'Phone' in customer else ''
                         )
-                        qb_customer.save()
+                        existing_values = list(filter(lambda x: x.list_id == qb_customer.list_id, customers_saved))
+                        if len(existing_values) == 0:
+                            qb_customer.save()
         response_xml = process_qbwc_query_request(xml_data, query_object_name)
         return HttpResponse(response_xml, content_type='text/xml')
     else:

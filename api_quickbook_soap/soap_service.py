@@ -334,8 +334,6 @@ def generate_invoice_add_response():
         
         for item in invoices[i].line_items:
             
-            logger.debug(f'Item: {item}')
-            
             # Asegúrate de que item es una instancia del modelo
             if isinstance(item, ZohoItem):
                 desc = item.description
@@ -348,37 +346,41 @@ def generate_invoice_add_response():
                 sku = item.get('sku', 'default_sku_value_if_not_found')
                 quantity = item.get('quantity', 'default_quantity_value_if_not_found')
                 rate = item.get('rate', 'default_rate_value_if_not_found')
-                
-            logger.debug(f'Description: {desc}')
-            logger.debug(f'SKU: {sku}')
             
             if sku == 'default_sku_value_if_not_found' or sku == '':
-                zoho_item = ZohoItem.objects.get((Q(name=desc) | Q(description=desc)), qb_list_id__isnull=False)
+                zoho_item = ZohoItem.objects.get((Q(name=desc) | Q(description=desc)))
             else:
-                zoho_item = ZohoItem.objects.get((Q(name=desc) | Q(description=desc) | Q(sku=sku)), qb_list_id__isnull=False)  
-            
-            logger.debug(f'Item: {zoho_item}') 
-            
-            if zoho_item.qb_list_id:
+                zoho_item = ZohoItem.objects.get(Q(sku=sku))
                 
-                logger.debug(f'Item QB List ID: {zoho_item.qb_list_id}')
-                
-                items_xml += f'''<InvoiceLineAdd>
-                                <ItemRef>
-                                    <ListID>{zoho_item.qb_list_id}</ListID>
-                                </ItemRef>
-                                <Desc>{desc}</Desc>
-                                <Quantity>{quantity}</Quantity>
-                                <Rate>{rate}</Rate>
-                            </InvoiceLineAdd>
-                            '''
+            if zoho_item:  
+            
+                if zoho_item.qb_list_id:
+                    
+                    items_xml += f'''<InvoiceLineAdd>
+                                    <ItemRef>
+                                        <ListID>{zoho_item.qb_list_id}</ListID>
+                                    </ItemRef>
+                                    <Desc>{desc}</Desc>
+                                    <Quantity>{quantity}</Quantity>
+                                    <Rate>{rate}</Rate>
+                                </InvoiceLineAdd>
+                                '''
+                else:
+                    logger.debug(f'Item {zoho_item} has no QB List ID')
+                    # Creando el listado de customer unmatched
+                    info_item_unmatched = {
+                        'zoho_item_id': zoho_item.item_id,
+                        'zoho_item_unmatched': zoho_item.name,
+                        'reason': 'Item is not matched in QuickBooks'
+                    }
+                    items_unmatched.append(info_item_unmatched)
             else:
-                logger.debug(f'Item {zoho_item} has no QB List ID')
+                logger.debug(f'Item {desc} has no match in Zoho Items')
                 # Creando el listado de customer unmatched
                 info_item_unmatched = {
-                    'zoho_item_id': zoho_item.item_id,
-                    'zoho_item_unmatched': zoho_item.name,
-                    'reason': 'Item is not matched in QuickBooks'
+                    'zoho_item_id': None,
+                    'zoho_item_unmatched': desc,
+                    'reason': 'Item is not matched in Zoho Items'
                 }
                 items_unmatched.append(info_item_unmatched)
                 
@@ -389,61 +391,61 @@ def generate_invoice_add_response():
             
         zoho_customer = ZohoCustomer.objects.get(contact_id=invoices[i].customer_id)
         
-        logger.debug(f'Customer: {zoho_customer}')
+        if zoho_customer:
         
-        if zoho_customer.qb_list_id:
-            
-            logger.debug(f'Customer QB List ID: {zoho_customer.qb_list_id}')
-            
-            logger.debug(f'Billing Address: {invoices[i].billing_address}')
-            
-            street = invoices[i].billing_address['street'] if invoices[i].billing_address['street'] != '' else 'NO STREET'
-            address = invoices[i].billing_address['address'] if invoices[i].billing_address['address'] != '' else 'NO ADDRESS'
-            city = invoices[i].billing_address['city'] if invoices[i].billing_address['city'] != '' else 'NO CITY'
-            state = invoices[i].billing_address['state'] if invoices[i].billing_address['state'] != '' else 'NO STATE'
-            zip_code = invoices[i].billing_address['zip'] if invoices[i].billing_address['zip'] != '' else '00000'
-            terms = invoices[i].terms if invoices[i].terms else 'Net 30'
-            
-            logger.debug(f'Street: {street}')
-            logger.debug(f'Address: {address}')
-            logger.debug(f'City: {city}')
-            logger.debug(f'State: {state}')
-            logger.debug(f'Zip Code: {zip_code}')
-            logger.debug(f'Terms: {terms}')
-            
-            if items_xml != '':
+            if zoho_customer.qb_list_id:
                 
-                data_xml += f'''<InvoiceAddRq requestID="{i + 2}">
-                                <InvoiceAdd>
-                                    <CustomerRef>   
-                                        <ListID>{zoho_customer.qb_list_id}</ListID>
-                                    </CustomerRef>  
-                                    <TxnDate>{invoices[i].date}</TxnDate>
-                                    <RefNumber>{invoices[i].invoice_number}</RefNumber>
-                                    <BillAddress>
-                                        <Addr1>{street}</Addr1>
-                                        <Addr2>{address}</Addr2>
-                                        <City>{city}</City>
-                                        <State>{state}</State>
-                                        <PostalCode>{zip_code}</PostalCode>
-                                    </BillAddress>
-                                    <PONumber>{invoices[i].invoice_number}</PONumber>
-                                    <TermsRef>
-                                        <FullName>{terms}</FullName>
-                                    </TermsRef>
-                                    {items_xml}
-                                </InvoiceAdd>
-                            </InvoiceAddRq>'''
-                        
-            logger.debug(f'Data XML: {data_xml}')
-            invoices[i].inserted_in_qb = True
-            invoices[i].save() 
+                street = invoices[i].billing_address['street'] if invoices[i].billing_address['street'] != '' else 'NO STREET'
+                address = invoices[i].billing_address['address'] if invoices[i].billing_address['address'] != '' else 'NO ADDRESS'
+                city = invoices[i].billing_address['city'] if invoices[i].billing_address['city'] != '' else 'NO CITY'
+                state = invoices[i].billing_address['state'] if invoices[i].billing_address['state'] != '' else 'NO STATE'
+                zip_code = invoices[i].billing_address['zip'] if invoices[i].billing_address['zip'] != '' else '00000'
+                terms = invoices[i].terms if invoices[i].terms else 'Net 30'
+                
+                if items_xml != '':
+                    
+                    data_xml += f'''<InvoiceAddRq requestID="{i + 2}">
+                                    <InvoiceAdd>
+                                        <CustomerRef>   
+                                            <ListID>{zoho_customer.qb_list_id}</ListID>
+                                        </CustomerRef>  
+                                        <TxnDate>{invoices[i].date}</TxnDate>
+                                        <RefNumber>{invoices[i].invoice_number}</RefNumber>
+                                        <BillAddress>
+                                            <Addr1>{street}</Addr1>
+                                            <Addr2>{address}</Addr2>
+                                            <City>{city}</City>
+                                            <State>{state}</State>
+                                            <PostalCode>{zip_code}</PostalCode>
+                                        </BillAddress>
+                                        <PONumber>{invoices[i].invoice_number}</PONumber>
+                                        <TermsRef>
+                                            <FullName>{terms}</FullName>
+                                        </TermsRef>
+                                        {items_xml}
+                                    </InvoiceAdd>
+                                </InvoiceAddRq>'''
+                            
+                logger.debug(f'Data XML: {data_xml}')
+                invoices[i].inserted_in_qb = True
+                invoices[i].save() 
+            else:
+                logger.debug(f'Customer {zoho_customer} has no QB List ID')
+                customer_unmatched = {
+                    'zoho_customer_id': zoho_customer.contact_id,
+                    'zoho_customer_unmatched': zoho_customer.customer_name,
+                    'reason': 'Customer is not matched in QuickBooks'
+                }
+                customers_unmatched.append(customer_unmatched)
+                invoices[i].customer_unmatched = customers_unmatched
+                invoices[i].inserted_in_qb = False
+                invoices[i].save()
         else:
-            logger.debug(f'Customer {zoho_customer} has no QB List ID')
+            logger.debug(f'Customer {invoices[i].customer_id} has no match in Zoho Customers')
             customer_unmatched = {
-                'zoho_customer_id': zoho_customer.contact_id,
-                'zoho_customer_unmatched': zoho_customer.customer_name,
-                'reason': 'Customer is not matched in QuickBooks'
+                'zoho_customer_id': invoices[i].customer_id,
+                'zoho_customer_unmatched': 'Customer not found',
+                'reason': 'Customer is not matched in Zoho Customers'
             }
             customers_unmatched.append(customer_unmatched)
             invoices[i].customer_unmatched = customers_unmatched
