@@ -75,11 +75,11 @@
                                         </tr>
                                     {% else %}
                                         <tr>
-                                            <td></td>
-                                            <td></td>
-                                            <td></td>
-                                            <td></td>
-                                            <td></td>
+                                            <td>{{ forloop.parentloop.counter }}</td>
+                                            <td>{{ item.qb_customer_name }}</td>
+                                            <td>{{ item.qb_customer_list_id }}</td>
+                                            <td>{{ item.qb_customer_email }}</td>
+                                            <td>{{ item.qb_customer_phone }}</td>
                                             <td>{{ coincidence.zoho_customer }}<br/>(ID: {{ coincidence.zoho_customer_id }})</td>
                                             <td>{{ coincidence.email }}<br/>(Match: {{ coincidence.coincidence_email }})</td>
                                             <td>{{ coincidence.phone }}<br/>(Match: {{ coincidence.coincidence_phone }})</td>
@@ -127,62 +127,8 @@
                         "paging": true,            
                         "pageLength": 5,          
                         "lengthMenu": [5, 10, 25, 50],
-                        "ordering": false,
         
         })
-
-        // Variable para almacenar la última fila con datos completos
-        var lastFullRowData = [];
-
-        // Función para rellenar las celdas vacías de la primera fila de cada página con la última fila con datos completos
-        function fillFirstRowOnly() {
-            $('#myTable tbody').each(function() {
-                $(this).find('tr').each(function(index) {
-                    var $row = $(this);
-                    var noCell = $row.find('td:eq(0)');
-                    var quickBookCustomerCell = $row.find('td:eq(1)');
-                    var qbListIDCell = $row.find('td:eq(2)');
-                    var qbEmailCell = $row.find('td:eq(3)');
-
-                    if (index == 0) {  // Solo afecta a la primera fila de cada página
-                        // Si las celdas están vacías y lastFullRowData tiene datos, rellenarlas con esos datos
-                        if (noCell.text().trim() === '' && lastFullRowData.length > 0) {
-                            noCell.html(lastFullRowData[0]);
-                        }
-
-                        if (quickBookCustomerCell.text().trim() === '' && lastFullRowData.length > 0) {
-                            quickBookCustomerCell.html(lastFullRowData[1]);
-                        }
-
-                        if (qbListIDCell.text().trim() === '' && lastFullRowData.length > 0) {
-                            qbListIDCell.html(lastFullRowData[2]);
-                        }
-
-                        if (qbEmailCell.text().trim() === '' && lastFullRowData.length > 0) {
-                            qbEmailCell.html(lastFullRowData[3]);
-                        }
-                    }
-
-                    // Si la fila tiene datos completos, actualizar lastFullRowData
-                    if (noCell.text().trim() !== '' && quickBookCustomerCell.text().trim() !== '' && qbListIDCell.text().trim() !== '' && qbEmailCell.text().trim() !== '') {
-                        lastFullRowData = [
-                            noCell.html(),
-                            quickBookCustomerCell.html(),
-                            qbListIDCell.html(),
-                            qbEmailCell.html()
-                        ];
-                    }
-                });
-            });
-        }
-
-        // Llamar a la función cada vez que se cambie de página
-        table.on('draw', function() {
-            fillFirstRowOnly();
-        });
-
-        // Llamar a la función al cargar la página por primera vez
-        fillFirstRowOnly();
     });
 
     function editRow(qb_customer_list_id, zoho_customer) {

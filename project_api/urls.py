@@ -26,5 +26,4 @@ urlpatterns = [
     path('api_zoho_items/', include('api_zoho_items.urls')), 
     path('api_zoho_invoices/', include('api_zoho_invoices.urls')), 
     path('api_quickbook_soap/', include('api_quickbook_soap.urls')),
-    path('load_customers/', include('load_customers.urls')), 
 ]

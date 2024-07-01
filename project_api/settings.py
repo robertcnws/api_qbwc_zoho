@@ -74,7 +74,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'load_customers',
     'api_zoho',
     'api_zoho_customers',
     'api_zoho_items',
