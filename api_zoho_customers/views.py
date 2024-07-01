@@ -27,6 +27,10 @@ def list_customers(request):
     while True:
         try:
             response = requests.get(url, headers=headers, params=params)
+            if response.status_code == 401:  # Si el token ha expirado
+                new_token = api_zoho_views.refresh_zoho_token()
+                headers['Authorization'] = f'Zoho-oauthtoken {new_token}'
+                response = requests.get(url, headers=headers, params=params)  # Reintenta la solicitud
             response.raise_for_status()
             customers = response.json()
             # logger.info(f'Customers Page {params["page"]}: {customers}')

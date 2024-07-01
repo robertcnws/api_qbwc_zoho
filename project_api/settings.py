@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 import environ
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -157,7 +158,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = 'static/'
+# STATIC_URL = '/static/'
+# BASE_DIR_STATIC = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# print(BASE_DIR_STATIC)
+
+# STATICFILES_DIRS = [
+#     os.path.join(f'{BASE_DIR_STATIC}/project_api/', "static"),
+# ]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field

@@ -75,7 +75,7 @@
                                         </tr>
                                     {% else %}
                                         <tr>
-                                            <td>{{ forloop.parentloop.counter }}</td>
+                                            <td></td>
                                             <td></td>
                                             <td></td>
                                             <td></td>
@@ -119,15 +119,69 @@
 
 <!-- Incluir DataTables JS -->
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+{% load static %}
+<script src="{% static 'js/datatableFunctions.js' %}"></script>
 
 <script type="text/javascript">
-    $(document).ready(function() {
-        $('#myTable').DataTable({
-            "paging": true,            
-            "pageLength": 10,          
-            "lengthMenu": [10, 25, 50],
-            "ordering": false,
+
+    $(document).ready( function () {
+         var table = $('#myTable').DataTable({
+                        "paging": true,            
+                        "pageLength": 10,          
+                        "lengthMenu": [10, 25, 50],
+                        "ordering": false,
+        
+        })
+
+        var lastFullRowData = [];
+
+        // Función para rellenar las celdas vacías de la primera fila de cada página con la última fila con datos completos
+        function fillFirstRowOnly() {
+            $(this).find('tr').each(function(index) {
+                var $row = $(this);
+                var noCell = $row.find('td:eq(0)');
+                var quickBookCustomerCell = $row.find('td:eq(1)');
+                var qbListIDCell = $row.find('td:eq(2)');
+                var qbEmailCell = $row.find('td:eq(3)');
+
+                if (index == 0) {  // Solo afecta a la primera fila de cada página
+                    // Si las celdas están vacías y lastFullRowData tiene datos, rellenarlas con esos datos
+                    if (noCell.text().trim() === '' && lastFullRowData.length > 0) {
+                        noCell.html(lastFullRowData[0]);
+                    }
+
+                    if (quickBookCustomerCell.text().trim() === '' && lastFullRowData.length > 0) {
+                        quickBookCustomerCell.html(lastFullRowData[1]);
+                    }
+
+                    if (qbListIDCell.text().trim() === '' && lastFullRowData.length > 0) {
+                        qbListIDCell.html(lastFullRowData[2]);
+                    }
+
+                    if (qbEmailCell.text().trim() === '' && lastFullRowData.length > 0) {
+                        qbEmailCell.html(lastFullRowData[3]);
+                    }
+                }
+
+                // Si la fila tiene datos completos, actualizar lastFullRowData
+                if (noCell.text().trim() !== '' && quickBookCustomerCell.text().trim() !== '' && qbListIDCell.text().trim() !== '' && qbEmailCell.text().trim() !== '') {
+                    lastFullRowData = [
+                        noCell.html(),
+                        quickBookCustomerCell.html(),
+                        qbListIDCell.html(),
+                        qbEmailCell.html()
+                    ];
+                }
+            })
+        }
+
+        // Llamar a la función cada vez que se cambie de página
+        table.on('draw', function() {
+            fillFirstRowOnly();
         });
+
+        // Llamar a la función al cargar la página por primera vez
+        fillFirstRowOnly();
     });
 
     function editRow(qb_customer_list_id, zoho_customer) {

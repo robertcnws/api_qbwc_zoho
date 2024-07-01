@@ -35,6 +35,25 @@ def get_access_token(client_id, client_secret, refresh_token):
     return access_token
 
 
+def refresh_zoho_token():
+    app_config = AppConfig.objects.first()
+    refresh_url = "https://accounts.zoho.com/oauth/v2/token"
+    payload = {
+        'refresh_token': app_config.zoho_refresh_token,
+        'client_id': app_config.zoho_client_id,
+        'client_secret': app_config.zoho_client_secret,
+        'grant_type': 'refresh_token'
+    }
+    response = requests.post(refresh_url, data=payload)
+    if response.status_code == 200:
+        new_token = response.json().get('access_token')
+        app_config.zoho_access_token = new_token
+        app_config.save()
+        return new_token
+    else:
+        raise Exception("Failed to refresh Zoho token")
+
+
 def get_refresh_token(request):
     authorization_code = request.GET.get("code", None)
     if not authorization_code:
