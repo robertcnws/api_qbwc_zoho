@@ -24,8 +24,8 @@ pipeline {
             steps {
                 script {
                     // Construye la imagen Docker usando el Dockerfile en el subdirectorio project_api
-                    dockerImage = docker.build("${DOCKER_REPO}:${env.BUILD_NUMBER}", '-f project_api/Dockerfile.jenkins .')
-                    dockerImage = docker.build("${DOCKER_REPO}:latest", '-f project_api/Dockerfile.jenkins .')
+                    dockerImage = docker.build("${DOCKER_REPO}:${env.BUILD_NUMBER}", '-f ${CONTAINER_NAME}/Dockerfile.jenkins .')
+                    dockerImage = docker.build("${DOCKER_REPO}:latest", '-f ${CONTAINER_NAME}/Dockerfile.jenkins .')
                 }
             }
         }
@@ -51,7 +51,15 @@ pipeline {
                     sh '''#!/bin/bash
                     docker stop ${CONTAINER_NAME} || true  // Detiene el contenedor si está en ejecución
                     docker rm ${CONTAINER_NAME} || true  // Elimina el contenedor detenido
-                    docker run -d --name ${CONTAINER_NAME} -p 8000:8000 ${DOCKER_REPO}:latest  // Ejecuta el contenedor en segundo plano
+                    docker run -d \
+                        --name ${CONTAINER_NAME} \
+                        -v $(pwd):/app \
+                        -v $(pwd)/nginx/gunicorn.conf.py:/etc/nginx/gunicorn.conf.py \
+                        -p 8000:8000 \
+                        -e DJANGO_SETTINGS_MODULE=${CONTAINER_NAME}.settings \
+                        --env-file ./${CONTAINER_NAME}/.env \
+                        --network api_qbwc_zoho_network \
+                        robertocnws/api_qbwc_zoho:latest
                     '''
                 }
             }
