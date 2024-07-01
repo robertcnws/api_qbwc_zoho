@@ -2,20 +2,21 @@ FROM python:3.12
 
 ENV PYTHONUNBUFFERED 1
 
+# Define el directorio de trabajo
 WORKDIR /app
 
+# Copia el archivo requirements.txt al directorio de trabajo
 COPY project_api/requirements.txt /app/
 
+# Instala pip y las dependencias desde requirements.txt
 RUN pip install --upgrade pip
-# RUN pip freeze > requirements.txt
-RUN pip install gunicorn
 RUN pip install -r requirements.txt
 
-# Copy the current directory contents into the container
-COPY . /app/
+# Copia el contenido de project_api al directorio de trabajo
+COPY project_api /app/project_api
 
-# Expose port 8000 for the Django application
+# Expone el puerto en el que tu aplicación escucha
 EXPOSE 8000
 
-# Run the Django server
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "project_api/project_api.wsgi:application"]
+# Comando para ejecutar tu aplicación usando gunicorn
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "project_api.wsgi:application"]
