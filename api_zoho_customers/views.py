@@ -33,17 +33,14 @@ def list_customers(request):
                 response = requests.get(url, headers=headers, params=params)  # Reintenta la solicitud
             response.raise_for_status()
             customers = response.json()
-            # logger.info(f'Customers Page {params["page"]}: {customers}')
             
             for customer in customers.get('contacts', []):
                 data = json.loads(customer) if isinstance(customer, str) else customer
                 new_customer = create_customer_instance(data)
                 value = list(filter(lambda x: x.contact_id == new_customer.contact_id, customers_saved))
-                # logger.info(f'Existing Customer: {new_customer.contact_id} - {new_customer.contact_name}')
                 if len(value) == 0 and new_customer.status == 'active':
                     customers_to_save.append(new_customer)
             
-            # Verifica si hay más páginas para obtener
             if 'page_context' in customers and 'has_more_page' in customers['page_context'] and customers['page_context']['has_more_page']:
                 params['page'] += 1  # Avanza a la siguiente página
             else:
@@ -51,10 +48,9 @@ def list_customers(request):
         except requests.exceptions.RequestException as e:
             logger.error(f"Error fetching customers: {e}")
             return JsonResponse({"error": "Failed to fetch customers"}), 500
+    
     for customer in customers_to_save:
-        value = list(filter(lambda x: x.contact_id == customer.contact_id, customers_saved))
-        if len(value) != 0:
-            customer.save()  
+        customer.save()  
     # Después de obtener todos los clientes, renderiza la plantilla con la lista de clientes
     customers_list = ZohoCustomer.objects.all()
     context = {'customers': customers_list}

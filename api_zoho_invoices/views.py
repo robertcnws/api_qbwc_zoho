@@ -56,7 +56,7 @@ def list_invoices(request):
             return JsonResponse({"error": "Failed to fetch customers"}), 500
     for invoice in invoices_to_save:
         value = list(filter(lambda x: x.invoice_id == invoice.invoice_id, invoices_saved))
-        if len(value) != 0:
+        if len(value) == 0:
             invoice.save()  
     # Después de obtener todos los clientes, renderiza la plantilla con la lista de clientes
     invoice_list = ZohoFullInvoice.objects.all()

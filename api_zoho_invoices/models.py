@@ -149,7 +149,7 @@ class ZohoFullInvoice(models.Model):
                 ):
                 super(ZohoFullInvoice, self).save(*args, **kwargs)
             else:   
-                print(f"ZohoFullInvoice {self.invoice_id} no guardado porque ya existe un objeto con el mismo invoice_id")
+                print(f"ZohoFullInvoice {self.invoice_id} ({self.invoice_number}) no guardado porque ya existe un objeto con el mismo invoice_id")
 
     class Meta:
         verbose_name = "Zoho Full Invoice"

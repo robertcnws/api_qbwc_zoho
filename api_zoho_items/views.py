@@ -51,7 +51,7 @@ def list_items(request):
             return JsonResponse({"error": "Failed to fetch customers"}), 500
     for item in items_to_save:
         value = list(filter(lambda x: x.item_id == item.item_id, items_saved))
-        if len(value) != 0:
+        if len(value) == 0:
             item.save()  
     # Después de obtener todos los clientes, renderiza la plantilla con la lista de clientes
     items_list = ZohoItem.objects.all()
