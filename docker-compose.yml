@@ -28,6 +28,23 @@ services:
       - django
     networks:
       - api_qbwc_zoho_network
+  
+  jenkins:
+    build: 
+      context: ./jenkins
+    container_name: jenkins_server
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    user: "jenkins"
+    environment:
+      - JAVA_OPTS=-Duser.timezone=America/New_York  # Opcional: Configura la zona horaria
+    restart: unless-stopped
+    networks:
+      - api_qbwc_zoho_network
 
   # db:
   #   image: postgres:13.0

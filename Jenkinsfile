@@ -13,6 +13,7 @@ pipeline {
         DOCKER_CREDENTIALS = credentials('docker-hub-token')
         DOCKER_USER = 'robertocnws'
         DOCKER_REPO = 'robertocnws/api_qbwc_zoho'
+        CONTAINER_NAME = 'project_api'
 
     }
 
@@ -36,24 +37,11 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    docker.withRegistry('https://index.docker.io/v1/') {
-                        // Crear la red si no existe
-                        sh '''
-                            docker network inspect api_qbwc_zoho_network >/dev/null 2>&1 || docker network create api_qbwc_zoho_network
-                        '''
-
-                        // Detener y eliminar contenedores existentes si están en ejecución
-                        sh '''
-                            docker stop project_api nginx_server || true
-                            docker rm project_api nginx_server || true
-                        '''
-
-                        // Iniciar los servicios usando docker-compose
-                        sh 'docker-compose -f docker-compose.yml up -d --build'
-
-                        // // Reiniciar Nginx para asegurar que los cambios sean aplicados
-                        // sh 'docker exec nginx_server nginx -s reload || true'
-                    }
+                    sh """
+                    docker stop ${CONTAINER_NAME} || true
+                    docker rm ${CONTAINER_NAME} || true
+                    docker run -d --name ${CONTAINER_NAME} -p 80:80 ${DOCKER_REPO}:latest
+                    """
                 }
             }
         }
