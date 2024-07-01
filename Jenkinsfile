@@ -44,10 +44,10 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
-                    withCredentials([string(credentialsId: "${DOCKER_CREDENTIALS}", variable: 'DOCKER_PASSWORD')]) {
+                    withCredentials([string(credentialsId: "${DOCKER_CREDENTIALS}", variable: 'DOCKER_CREDENTIALS')]) {
                         // Usa 'password stdin' para autenticar con Docker Hub
                         sh """
-                            echo \$DOCKER_PASSWORD | docker login -u \$DOCKER_USER --password-stdin
+                            echo \$DOCKER_CREDENTIALS | docker login -u \$DOCKER_USER --password-stdin
                         """
                         docker.withRegistry('https://index.docker.io/v1/', '') {
                             // Empuja la imagen Docker al repositorio de Docker Hub
