@@ -20,17 +20,6 @@ pipeline {
             }
         }
 
-        // stage('Login to Docker Hub') {
-        //     steps {
-        //         script {
-        //             // Login a Docker Hub usando el PAT (Token de Acceso Personal) como password stdin
-        //             sh """
-        //                 echo \$DOCKER_CREDENTIALS | docker login -u \$DOCKER_USER --password-stdin
-        //             """
-        //         }
-        //     }
-        // }
-
         stage('Build Docker Image') {
             steps {
                 script {
@@ -45,9 +34,12 @@ pipeline {
             steps {
                 script {
                     withCredentials([string(credentialsId: 'docker-hub-token', variable: 'DOCKER_HUB_TOKEN')]) {
-                        sh 'echo $DOCKER_HUB_TOKEN | docker login -u robertocnws --password-stdin https://index.docker.io/v1/'
-                        sh 'docker push ${DOCKER_REPO}:${env.BUILD_NUMBER}'
-                        sh 'docker push ${DOCKER_REPO}:latest'
+                        // Usa 'bash' para evitar problemas con `sh` y `Bad substitution`
+                        sh '''#!/bin/bash
+                        echo $DOCKER_HUB_TOKEN | docker login -u $DOCKER_USER --password-stdin https://index.docker.io/v1/
+                        docker push ${DOCKER_REPO}:${env.BUILD_NUMBER}
+                        docker push ${DOCKER_REPO}:latest
+                        '''
                     }
                 }
             }
@@ -56,11 +48,11 @@ pipeline {
         stage('Deploy Docker Container') {
             steps {
                 script {
-                    sh """
+                    sh '''#!/bin/bash
                     docker stop ${CONTAINER_NAME} || true  // Detiene el contenedor si está en ejecución
                     docker rm ${CONTAINER_NAME} || true  // Elimina el contenedor detenido
                     docker run -d --name ${CONTAINER_NAME} -p 8000:8000 ${DOCKER_REPO}:latest  // Ejecuta el contenedor en segundo plano
-                    """
+                    '''
                 }
             }
         }
