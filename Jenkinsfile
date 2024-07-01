@@ -24,8 +24,8 @@ pipeline {
             steps {
                 script {
                     // Construye la imagen Docker usando el Dockerfile en el subdirectorio project_api
-                    dockerImage = docker.build("${DOCKER_REPO}:${env.BUILD_NUMBER}", '-f ${CONTAINER_NAME}/Dockerfile.jenkins .')
-                    dockerImage = docker.build("${DOCKER_REPO}:latest", '-f ${CONTAINER_NAME}/Dockerfile.jenkins .')
+                    dockerImage = docker.build("${DOCKER_REPO}:${env.BUILD_NUMBER}", '-f Dockerfile.jenkins .')
+                    dockerImage = docker.build("${DOCKER_REPO}:latest", '-f Dockerfile.jenkins .')
                 }
             }
         }

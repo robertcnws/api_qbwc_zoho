@@ -10,13 +10,15 @@ COPY project_api/requirements.txt /app/
 
 # Instala pip y las dependencias desde requirements.txt
 RUN pip install --upgrade pip
+# RUN pip freeze > requirements.txt
+RUN pip install gunicorn
 RUN pip install -r requirements.txt
 
-# Copia el contenido de project_api al directorio de trabajo
-COPY project_api /app/project_api
+# Copy the current directory contents into the container
+COPY . /app/
 
-# Expone el puerto en el que tu aplicación escucha
+# Expose port 8000 for the Django application
 EXPOSE 8000
 
-# Comando para ejecutar tu aplicación usando gunicorn
+# Run the Django server
 CMD ["gunicorn", "--bind", "0.0.0.0:8000", "project_api.wsgi:application"]
