@@ -14,13 +14,14 @@ pipeline {
         DOCKER_USER = 'robertocnws'
         DOCKER_REPO = 'robertocnws/api_qbwc_zoho'
         CONTAINER_NAME = 'project_api'
+        REPO_URL = 'https://github.com/robertcnws/api_qbwc_zoho.git'
 
     }
 
     stages {
         stage('Checkout') {
             steps {
-                checkout scm
+                git branch: 'dev', url: "${REPO_URL}"
             }
         }
 
