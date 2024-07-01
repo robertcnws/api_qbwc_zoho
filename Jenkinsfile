@@ -51,15 +51,17 @@ pipeline {
                     sh '''#!/bin/bash
                     docker stop ${CONTAINER_NAME} || true  // Detiene el contenedor si está en ejecución
                     docker rm ${CONTAINER_NAME} || true  // Elimina el contenedor detenido
+                    docker network create api_qbwc_zoho_network || true  // Crea una red de Docker si no existe
+                    docker build -t ${DOCKER_REPO}:latest ./project_api
                     docker run -d \
-                        --name ${CONTAINER_NAME} \
-                        -v $(pwd):/app \
-                        -v $(pwd)/nginx/gunicorn.conf.py:/etc/nginx/gunicorn.conf.py \
-                        -p 8000:8000 \
-                        -e DJANGO_SETTINGS_MODULE=${CONTAINER_NAME}.settings \
-                        --env-file ./${CONTAINER_NAME}/.env \
-                        --network api_qbwc_zoho_network \
-                        robertocnws/api_qbwc_zoho:latest
+                    --name project_api \
+                    -p 8000:8000 \
+                    -v $(pwd):/app \
+                    -v $(pwd)/nginx/gunicorn.conf.py:/etc/nginx/gunicorn.conf.py \
+                    -e DJANGO_SETTINGS_MODULE=${CONTAINER_NAME}.settings \
+                    --env-file ./${CONTAINER_NAME}/.env \
+                    --network api_qbwc_zoho_network \
+                    ${DOCKER_REPO}:latest
                     '''
                 }
             }
