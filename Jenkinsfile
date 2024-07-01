@@ -66,12 +66,41 @@ pipeline {
             }
         }
 
+        stage('Verify Container Running') {
+            steps {
+                script {
+                    def containerRunning = sh(script: "docker ps -q -f name=${CONTAINER_NAME}", returnStdout: true).trim()
+                    if (containerRunning) {
+                        echo "Container ${CONTAINER_NAME} is running."
+                    } else {
+                        error "Container ${CONTAINER_NAME} is not running. Check logs for details."
+                    }
+                }
+            }
+        }
+
         stage('Verify Files') {
             steps {
                 script {
-                    sh '''#!/bin/bash
-                    docker exec ${CONTAINER_NAME} ls -la /app
-                    '''
+                    def containerRunning = sh(script: "docker ps -q -f name=${CONTAINER_NAME}", returnStdout: true).trim()
+                    if (containerRunning) {
+                        sh '''#!/bin/bash
+                        docker exec ${CONTAINER_NAME} ls -la /app
+                        '''
+                    } else {
+                        echo "Skipping file verification as container is not running."
+                    }
+                }
+            }
+        }
+
+        stage('Check Container Logs') {
+            steps {
+                script {
+                    def containerRunning = sh(script: "docker ps -aq -f name=${CONTAINER_NAME}", returnStdout: true).trim()
+                    if (!sh(script: "docker ps -q -f name=${CONTAINER_NAME}", returnStdout: true).trim()) {
+                        sh "docker logs ${containerRunning}"
+                    }
                 }
             }
         }
