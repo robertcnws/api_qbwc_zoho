@@ -14,7 +14,7 @@ RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
 # Copia todo el contenido del directorio del proyecto al contenedor
-COPY . /app/
+COPY project_api /app/
 
 # Expose port 8000 for the Django application
 EXPOSE 8000
