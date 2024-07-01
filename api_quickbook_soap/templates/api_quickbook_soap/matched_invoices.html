@@ -103,7 +103,7 @@
                                                     </li>
                                                 {% endfor %}
                                             </ul>
-                                        {% elif not invoice.inserted_in_qb %}
+                                        {% elif not invoice.inserted_in_qb and not invoice.customer_unmatched and not invoice.items_unmatched %}
                                             <p class="alert alert-warning" style="text-align: center;">Not processed</p>
                                         {% else %}
                                             <p class="alert alert-success" style="text-align: center;"><b>Matched</b></p>
@@ -120,7 +120,7 @@
                                                     </li>
                                                 {% endfor %}
                                             </ul>
-                                        {% elif not invoice.inserted_in_qb %}
+                                        {% elif not invoice.inserted_in_qb and not invoice.customer_unmatched and not invoice.items_unmatched %}
                                             <p class="alert alert-warning" style="text-align: center;">Not processed</p>
                                         {% else %}
                                             <p class="alert alert-success" style="text-align: center;"><b>Matched</b></p>
