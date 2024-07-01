@@ -20,16 +20,16 @@ pipeline {
             }
         }
 
-        stage('Login to Docker Hub') {
-            steps {
-                script {
-                    // Login a Docker Hub usando el PAT (Token de Acceso Personal) como password stdin
-                    sh """
-                        echo \$DOCKER_CREDENTIALS | docker login -u \$DOCKER_USER --password-stdin
-                    """
-                }
-            }
-        }
+        // stage('Login to Docker Hub') {
+        //     steps {
+        //         script {
+        //             // Login a Docker Hub usando el PAT (Token de Acceso Personal) como password stdin
+        //             sh """
+        //                 echo \$DOCKER_CREDENTIALS | docker login -u \$DOCKER_USER --password-stdin
+        //             """
+        //         }
+        //     }
+        // }
 
         stage('Build Docker Image') {
             steps {
@@ -45,7 +45,11 @@ pipeline {
             steps {
                 script {
                     withCredentials([string(credentialsId: "${DOCKER_CREDENTIALS}", variable: 'DOCKER_PASSWORD')]) {
-                        docker.withRegistry('https://index.docker.io/v1/', "${DOCKER_CREDENTIALS}") {
+                        // Usa 'password stdin' para autenticar con Docker Hub
+                        sh """
+                            echo \$DOCKER_PASSWORD | docker login -u \$DOCKER_USER --password-stdin
+                        """
+                        docker.withRegistry('https://index.docker.io/v1/', '') {
                             // Empuja la imagen Docker al repositorio de Docker Hub
                             dockerImage.push("${env.BUILD_NUMBER}")
                             dockerImage.push('latest')
