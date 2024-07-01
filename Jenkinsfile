@@ -46,7 +46,8 @@ pipeline {
                 script {
                     withCredentials([string(credentialsId: 'docker-hub-token', variable: 'DOCKER_HUB_TOKEN')]) {
                         sh 'echo $DOCKER_HUB_TOKEN | docker login -u robertocnws --password-stdin https://index.docker.io/v1/'
-                        sh 'docker push ${DOCKER_REPO}:${IMAGE_TAG}'
+                        sh 'docker push ${DOCKER_REPO}:${env.BUILD_NUMBER}'
+                        sh 'docker push ${DOCKER_REPO}:latest'
                     }
                 }
             }
