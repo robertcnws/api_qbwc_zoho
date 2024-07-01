@@ -48,9 +48,11 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
-                    docker.withRegistry('', "${DOCKER_CREDENTIALS}") {
-                        dockerImage.push("${env.BUILD_NUMBER}")
-                        dockerImage.push('latest')
+                    withCredentials([string(credentialsId: "${DOCKER_CREDENTIALS}", variable: 'DOCKER_PASSWORD')]) {
+                        docker.withRegistry('https://index.docker.io/v1/', 'docker-hub-credentials') {
+                            dockerImage.push("${env.BUILD_NUMBER}")
+                            dockerImage.push('latest')
+                        }
                     }
                 }
             }
