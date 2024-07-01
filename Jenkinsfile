@@ -52,7 +52,7 @@ pipeline {
                     docker stop ${CONTAINER_NAME} || true  // Detiene el contenedor si está en ejecución
                     docker rm ${CONTAINER_NAME} || true  // Elimina el contenedor detenido
                     docker network create api_qbwc_zoho_network || true  // Crea una red de Docker si no existe
-                    docker build -t ${DOCKER_REPO}:latest ./project_api
+                    docker build -t ${DOCKER_REPO}:latest ./${CONTAINER_NAME}
                     docker run -d \
                     --name project_api \
                     -p 8000:8000 \
