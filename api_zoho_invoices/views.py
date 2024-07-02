@@ -189,7 +189,7 @@ def create_invoice_instance(data):
             customer_default_billing_address=data.get('customer_default_billing_address', {}),
             subject_content=data.get('subject_content', ''),
             can_send_in_mail=data.get('can_send_in_mail', False),
-            invoice_url=data.get('invoice_url', ''),
+            invoice_url=data.get('invoice_url', '')[0:200] if data.get('invoice_url', '') else '',
             notes=data.get('notes', ''),
             terms=data.get('terms', ''),
             billing_address=data.get('billing_address', {}),

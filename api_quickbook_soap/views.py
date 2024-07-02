@@ -2,6 +2,7 @@ from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.shortcuts import render, get_object_or_404
+from django.db.models import Q
 from api_zoho_customers.models import ZohoCustomer
 from api_zoho_items.models import ZohoItem
 from api_zoho_invoices.models import ZohoFullInvoice
@@ -10,6 +11,7 @@ import difflib
 import api_quickbook_soap.soap_service as soap_service
 import xmltodict
 import logging
+import re
 
 #############################################
 # Configura el logging
@@ -65,13 +67,14 @@ def quickbook_api_settings(request):
 def matching_items(request):
     global similar_items
     similar_items = []
+    pattern = r'^[A-Za-z0-9]{8}\d-[A-Za-z0-9]{10}$'
     qb_items = QbItem.objects.filter(matched=False)
-    zoho_items = ZohoItem.objects.filter(qb_list_id__isnull=True) | ZohoItem.objects.filter(qb_list_id='')
+    zoho_items = ZohoItem.objects.filter(Q(qb_list_id__isnull=True) | Q(qb_list_id='') | ~Q(qb_list_id__regex=pattern))
     for qb_item in qb_items:    
         dependences_list = []
         for zoho_item in zoho_items:
             seem = difflib.SequenceMatcher(None, qb_item.name, zoho_item.name).ratio() if qb_item.name and zoho_item.name else 0
-            if seem > 0.4 and zoho_item.qb_list_id == '':
+            if seem > 0.4 and (zoho_item.qb_list_id == '' or not re.match(pattern, zoho_item.qb_list_id)):
                 dependence = {
                         'zoho_item_id': zoho_item.item_id,
                         'zoho_item': zoho_item.name, 
@@ -81,6 +84,7 @@ def matching_items(request):
                 }
                 dependences_list.append(dependence)
         sorted_dependences_list = sorted(dependences_list, key=lambda x: x['seem'], reverse=True)
+        # print(f"Dependences List: {sorted_dependences_list}")
         similar_items.append({
                                 'qb_item_list_id': qb_item.list_id, 
                                 'qb_item_name': qb_item.name,
@@ -93,14 +97,15 @@ def matching_items(request):
 def matching_customers(request):
     global similar_customers
     similar_customers = []
+    pattern = r'^[A-Za-z0-9]{8}\d-[A-Za-z0-9]{10}$'
     qb_customers = QbCustomer.objects.filter(matched=False)
-    zoho_customers = ZohoCustomer.objects.filter(qb_list_id__isnull=True) | ZohoCustomer.objects.filter(qb_list_id='')
+    zoho_customers = ZohoCustomer.objects.filter(Q(qb_list_id__isnull=True) | Q(qb_list_id='') | ~Q(qb_list_id__regex=pattern))
     for qb_customer in qb_customers:    
         dependences_list = []
         for zoho_customer in zoho_customers:
             seem_email = difflib.SequenceMatcher(None, qb_customer.email, zoho_customer.email).ratio() if qb_customer.email and zoho_customer.email else 0
             seem_phone = difflib.SequenceMatcher(None, qb_customer.phone, zoho_customer.phone).ratio() if qb_customer.phone and zoho_customer.phone else 0
-            if (seem_email > 0.7 or seem_phone > 0.7) and zoho_customer.qb_list_id == '':
+            if ((seem_email > 0.7 or seem_phone > 0.7) and (zoho_customer.qb_list_id == '' or not re.match(pattern, zoho_customer.qb_list_id))):
                 dependence = {
                         'zoho_customer_id': zoho_customer.contact_id,
                         'zoho_customer': zoho_customer.customer_name, 
@@ -295,6 +300,7 @@ def start_qbwc_query_request(request, query_object_name, list_of_objects):
             xml_dict = xmltodict.parse(xml_data)
             response_xml = xml_dict['soap:Envelope']['soap:Body']['receiveResponseXML']['response']
             data_dict = xmltodict.parse(response_xml)
+            print(f"Data Dict: {data_dict}")
             if f'{query_object_name}QueryRs' in xml_data:
                 elements_query_rs = data_dict['QBXML']['QBXMLMsgsRs'][f'{query_object_name}QueryRs'][f'{query_object_name}Ret']
                 list_of_objects = [elem for elem in elements_query_rs]

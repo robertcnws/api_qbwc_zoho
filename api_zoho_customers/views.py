@@ -49,6 +49,8 @@ def list_customers(request):
             logger.error(f"Error fetching customers: {e}")
             return JsonResponse({"error": "Failed to fetch customers"}), 500
     
+    
+    
     for customer in customers_to_save:
         customer.save()  
     # Después de obtener todos los clientes, renderiza la plantilla con la lista de clientes
