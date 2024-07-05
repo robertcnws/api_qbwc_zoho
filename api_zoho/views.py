@@ -3,10 +3,45 @@ from django.conf import settings
 from django.http import JsonResponse
 import requests
 import os
+import logging
 from django.urls import reverse
 from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from .models import AppConfig
-from .forms import ApiZohoForm
+from .forms import ApiZohoForm, LoginForm
+
+#############################################
+# Configura el logging
+#############################################
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
+
+def login_view(request):
+    if request.method == 'POST':
+        form = LoginForm(data=request.POST)
+        if form.is_valid():
+            username = form.clean().get('username')
+            password = form.clean().get('password')
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                login(request, user)
+                return redirect('home')
+            else:
+                form.add_error(None, 'Username or password is incorrect')
+        else:
+            logging.error(form.errors)  
+    else:
+        form = LoginForm()
+    return render(request, 'api_zoho/login.html', {'form': form})
+
+
+@login_required(login_url='login')
+def logout_view(request):
+    logout(request)  # Cierra la sesión del usuario
+    return redirect('login')
 
 
 def generate_auth_url(request):
@@ -91,6 +126,7 @@ def get_refresh_token(request):
 
 
 # GET THE ZOHO API ACCESS TOKEN
+@login_required(login_url='login')
 def zoho_api_settings(request):
     app_config = AppConfig.objects.first()
     if not app_config:
@@ -128,6 +164,7 @@ def zoho_api_settings(request):
     return render(request, "api_zoho/zoho_api_settings.html", context)
 
 
+@login_required(login_url='login')
 def zoho_api_connect(request):
     app_config = AppConfig.objects.first()
     if app_config.zoho_connection_configured:
@@ -162,5 +199,6 @@ def config_headers(request):
     return headers
 
 
+@login_required(login_url='login')
 def home(request):
     return render(request, 'api_zoho/home.html')    

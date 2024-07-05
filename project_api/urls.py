@@ -20,7 +20,9 @@ import api_zoho.views as zoho_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', zoho_views.home, name='home'),
+    path('logout/', zoho_views.logout_view, name='logout'),
+    path('', zoho_views.login_view, name='login'),
+    path('home/', zoho_views.home, name='home'),
     path('api_zoho/', include('api_zoho.urls')), 
     path('api_zoho_customers/', include('api_zoho_customers.urls')), 
     path('api_zoho_items/', include('api_zoho_items.urls')), 

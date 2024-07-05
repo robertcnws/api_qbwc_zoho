@@ -4,26 +4,32 @@ import api_zoho.views as api_zoho_views
 from django.conf import settings
 from api_zoho.models import AppConfig   
 from api_zoho_customers.models import ZohoCustomer 
-from django.utils.dateparse import parse_datetime  
+from django.utils.dateparse import parse_datetime 
+from django.contrib.auth.decorators import login_required
+from django.db import transaction
 import requests
-import json
 import logging
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
+@login_required(login_url='login')
 def list_customers(request):
     app_config = AppConfig.objects.first()
     headers = api_zoho_views.config_headers(request)  # Asegúrate de que esto esté configurado correctamente
+    customers_saved = list(ZohoCustomer.objects.all())
+
     params = {
-        'page': 1,       # Página inicial
-        'per_page': 200  # Cantidad de resultados por página, ajusta según la API de Zoho
+        'page': 1,
+        'per_page': 200,  # Asegúrate de que este sea el valor máximo permitido por la API
+        'organization_id': app_config.zoho_org_id,
     }
-    url = f'{settings.ZOHO_URL_READ_CUSTOMERS}?organization_id={app_config.zoho_org_id}'
+
+    url = f'{settings.ZOHO_URL_READ_CUSTOMERS}'
     customers_to_save = []
-    customers_saved = ZohoCustomer.objects.all()
-    
+    customers_to_get = [] 
+
     while True:
         try:
             response = requests.get(url, headers=headers, params=params)
@@ -33,28 +39,42 @@ def list_customers(request):
                 response = requests.get(url, headers=headers, params=params)  # Reintenta la solicitud
             response.raise_for_status()
             customers = response.json()
-            
-            for customer in customers.get('contacts', []):
-                data = json.loads(customer) if isinstance(customer, str) else customer
-                new_customer = create_customer_instance(data)
-                value = list(filter(lambda x: x.contact_id == new_customer.contact_id, customers_saved))
-                if len(value) == 0 and new_customer.status == 'active':
-                    customers_to_save.append(new_customer)
-            
+            if customers.get('contacts', []):
+                customers_to_get.extend(customers['contacts'])
             if 'page_context' in customers and 'has_more_page' in customers['page_context'] and customers['page_context']['has_more_page']:
                 params['page'] += 1  # Avanza a la siguiente página
             else:
                 break  # Sal del bucle si no hay más páginas
         except requests.exceptions.RequestException as e:
             logger.error(f"Error fetching customers: {e}")
-            return JsonResponse({"error": "Failed to fetch customers"}), 500
+            return JsonResponse({"error": "Failed to fetch customers"}, status=500)
     
+    existing_customers = {customer.contact_id: customer for customer in customers_saved}
+    existing_emails = {customer.email: customer for customer in customers_saved}
+
+    for data in customers_to_get:
+        new_customer = create_customer_instance(data)
+        if new_customer.contact_id not in existing_customers and new_customer.email not in existing_emails and new_customer.status == 'active':
+            customers_to_save.append(new_customer)
+
+    def save_customers_in_batches(customers, batch_size=100):
+        for i in range(0, len(customers), batch_size):
+            batch = customers[i:i + batch_size]
+            with transaction.atomic():
+                ZohoCustomer.objects.bulk_create(batch)
     
-    
-    for customer in customers_to_save:
-        customer.save()  
+    save_customers_in_batches(customers_to_save, batch_size=100)
+
     # Después de obtener todos los clientes, renderiza la plantilla con la lista de clientes
-    customers_list = ZohoCustomer.objects.all()
+    customers_list_query = ZohoCustomer.objects.all()
+    batch_size = 200  # Ajusta este tamaño según tus necesidades
+    customers_list = []
+    
+    # Dividir en partes y procesar cada parte
+    for i in range(0, customers_list_query.count(), batch_size):
+        batch = customers_list_query[i:i + batch_size]
+        customers_list.extend(batch)  # Agregar datos al acumulador
+    
     context = {'customers': customers_list}
     return render(request, 'api_zoho_customers/list_customers.html', context)
     

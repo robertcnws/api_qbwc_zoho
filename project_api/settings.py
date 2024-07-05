@@ -40,7 +40,9 @@ environ.Env.read_env()
 # SECRET_KEY = env('SECRET_KEY')
 
 # Configuración adicional, por ejemplo:
-# ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost'])
+# ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '10.1.10.216'])
+
+ALLOWED_HOSTS = []
 
 # Env Vars
 ZOHO_SCOPE_INVOICES = env('ZOHO_SCOPE_INVOICES')
@@ -51,8 +53,6 @@ ZOHO_URL_READ_CUSTOMERS = env('ZOHO_URL_READ_CUSTOMERS')
 ZOHO_URL_READ_ITEMS = env('ZOHO_URL_READ_ITEMS')
 ZOHO_TOKEN_URL = env('ZOHO_TOKEN_URL')
 ZOHO_AUTH_URL = env('ZOHO_AUTH_URL')
-
-ALLOWED_HOSTS = []
 
 CSRF_TRUSTED_ORIGINS = [
     'https://127.0.0.1',
@@ -152,6 +152,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTHENTICATION_BACKENDS = ['api_zoho.auth_backends.LoginUserBackend', 'django.contrib.auth.backends.ModelBackend']
+AUTH_USER_MODEL = 'api_zoho.LoginUser'
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
@@ -165,16 +168,16 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.0/howto/static-files/
+## Static files (CSS, JavaScript, Images)
+## https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = '/static/'
-BASE_DIR_STATIC = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-print(BASE_DIR_STATIC)
+# STATIC_URL = '/static/'
+# BASE_DIR_STATIC = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# print(BASE_DIR_STATIC)
 
-STATICFILES_DIRS = [
-    os.path.join(f'{BASE_DIR_STATIC}/project_api/', "static"),
-]
+# STATICFILES_DIRS = [
+#     os.path.join(f'{BASE_DIR_STATIC}/project_api/', "static"),
+# ]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field

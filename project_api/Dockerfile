@@ -19,4 +19,5 @@ EXPOSE 8000
 
 # Run the Django server
 # CMD ["gunicorn", "--bind", "0.0.0.0:8000", "project_api.wsgi:application"]
-CMD ["sh", "-c", "python manage.py migrate && gunicorn --bind 0.0.0.0:8000 project_api.wsgi:application"]
+
+CMD ["sh", "-c", "python manage.py makemigrations && python manage.py migrate && gunicorn --bind 0.0.0.0:8000 project_api.wsgi:application"]

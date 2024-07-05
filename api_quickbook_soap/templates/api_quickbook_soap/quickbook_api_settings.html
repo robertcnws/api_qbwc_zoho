@@ -9,7 +9,7 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer"/>
 </head>
-<body>
+<body class="d-flex justify-content-center align-items-center min-vh-100">
     <div class="container mt-5 shadow p-3 mb-5 bg-white rounded">
 
         <!-- Messages -->
@@ -42,6 +42,16 @@
                     
                     <div class="container mt-5">
                         <ul class="list-group">
+                            <li class="list-group-item">
+                                <a href="{% url 'api_quickbook_soap:qbwc_customers' %}" class="text-decoration-none">
+                                    <i class="fas fa-users me-2"></i> QBWC Customers
+                                </a>
+                            </li>
+                            <li class="list-group-item">
+                                <a href="{% url 'api_quickbook_soap:qbwc_items' %}" class="text-decoration-none">
+                                    <i class="fas fa-box me-2"></i> QBWC Items
+                                </a>
+                            </li>
                             <li class="list-group-item">
                                 <a href="{% url 'api_quickbook_soap:matching_customers' %}" class="text-decoration-none">
                                     <i class="fas fa-users me-2"></i> Match Customers

@@ -1,10 +1,17 @@
 from django.db import models
 
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
+
 class QbItem(models.Model):
     id = models.AutoField(primary_key=True)
     list_id = models.CharField(max_length=50, blank=True, null=True)
     name = models.CharField(max_length=255, blank=True, null=True)
     matched = models.BooleanField(default=False)
+    never_match = models.BooleanField(default=False)
     
     
     def save(self, *args, **kwargs):
@@ -14,7 +21,7 @@ class QbItem(models.Model):
             if not (QbItem.objects.filter(list_id=self.list_id).exists() or QbItem.objects.filter(name=self.name).exists()):
                 super(QbItem, self).save(*args, **kwargs)
             else:
-                print(f"QbItem {self.name} no guardado porque ya existe un objeto con el mismo list_id o name")
+                logger.error(f"QbItem {self.name} no guardado porque ya existe un objeto con el mismo list_id o name")
 
     def __str__(self):
         return self.name
@@ -26,6 +33,7 @@ class QbCustomer(models.Model):
     email = models.EmailField(max_length=255, blank=True, null=True)
     phone = models.CharField(max_length=50, blank=True, null=True)
     matched = models.BooleanField(default=False)
+    never_match = models.BooleanField(default=False)
     
     def save(self, *args, **kwargs):
         if self.pk:  
@@ -38,7 +46,7 @@ class QbCustomer(models.Model):
             ):
                 super(QbCustomer, self).save(*args, **kwargs)
             else:
-                print(f"QbCustomer {self.name} no guardado porque ya existe un objeto con el mismo list_id, email o phone")
+                logger.error(f"QbCustomer {self.name} no guardado porque ya existe un objeto con el mismo list_id, email o phone")
 
     def __str__(self):
         return self.name
