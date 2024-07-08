@@ -101,6 +101,11 @@ def qbwc_customers(request):
     return render(request, 'api_quickbook_soap/qbwc_customers.html', context=context)
 
 
+#############################################
+# Never match AJAX methods
+#############################################
+
+
 @require_POST
 def never_match_items_ajax(request):
     try:
@@ -303,7 +308,7 @@ def matched_customers(request):
         qb_list_id__isnull=False
     ).exclude(
         qb_list_id=''
-    ).values('qb_list_id', 'contact_id', 'customer_name')
+    ).values('qb_list_id', 'contact_id', 'customer_name', 'email', 'phone', 'company_name')
 
     # Convertir `zoho_customers_dict` a un diccionario para una búsqueda rápida
     zoho_customers_dict = {customer['qb_list_id']: customer for customer in zoho_customers_dict}
@@ -318,6 +323,9 @@ def matched_customers(request):
             matched = {
                 'zoho_customer_id': zoho_customer['contact_id'],
                 'zoho_customer': zoho_customer['customer_name'],
+                'zoho_customer_email': zoho_customer['email'],
+                'zoho_customer_phone': zoho_customer['phone'],
+                'zoho_customer_company': zoho_customer['company_name'],
                 'qb_customer_name': qb_customer['name'],
                 'qb_customer_list_id': qb_customer['list_id'],
                 'zoho_customer_qb_list_id': zoho_customer['qb_list_id']
@@ -376,7 +384,7 @@ def match_all_first_items_ajax(request):
                 zoho_item.save()
                 qb_item.matched = True if action == 'match' else False
                 qb_item.save()
-        return JsonResponse({'status': 'success'})
+        return JsonResponse({'status': 'success', 'message': 'Items matched successfully'})
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
     
@@ -395,7 +403,7 @@ def match_all_first_customers_ajax(request):
                 zoho_customer.save()
                 qb_customer.matched = True if action == 'match' else False
                 qb_customer.save()
-        return JsonResponse({'status': 'success'})
+        return JsonResponse({'status': 'success', 'message': 'Customers matched successfully'})
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
@@ -416,7 +424,8 @@ def match_one_item_ajax(request):
         zoho_item.save()
         qb_item.matched = True if action == 'match' else False
         qb_item.save()
-        return JsonResponse({'status': 'success'})
+        message = 'Item matched successfully' if action == 'match' else 'Item unmatched successfully'
+        return JsonResponse({'status': 'success', 'message': message})
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
     
@@ -428,17 +437,14 @@ def match_one_customer_ajax(request):
     try:
         qb_list_id = request.POST['qb_customer_list_id']
         zoho_customer_id = request.POST['zoho_customer_id']
-        print(f"Zoho Customer ID: {zoho_customer_id}")
-        print(f"QB List ID: {qb_list_id}")
         qb_customer = get_object_or_404(QbCustomer, list_id=qb_list_id)
-        print(f"QB Customer: {qb_customer}")    
         zoho_customer = get_object_or_404(ZohoCustomer, contact_id=zoho_customer_id)
-        print(f"Zoho Customer: {zoho_customer}")
         zoho_customer.qb_list_id = qb_list_id if action == 'match' else ''
         zoho_customer.save()
         qb_customer.matched = True if action == 'match' else False
         qb_customer.save()
-        return JsonResponse({'status': 'success'})
+        message = 'Customer matched successfully' if action == 'match' else 'Customer unmatched successfully'
+        return JsonResponse({'status': 'success', 'message': message})
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
     

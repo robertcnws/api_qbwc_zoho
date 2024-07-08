@@ -2,85 +2,69 @@
 
 {% block content %}
 
-    {% if customer %}
-        <h1 class="mb-4">Customer Details</h1>
+    {% if item %}
+        <h1 class="mb-4">Item Details</h1>
         <table class="table table-bordered">
             <tbody>
                 <tr>
-                    <th scope="row">Zoho Customer Name</th>
-                    <td>{{ customer.contact_name }}</td>
+                    <th scope="row">Zoho Item ID</th>
+                    <td>{{ item.item_id }}</td>
                 </tr>
                 <tr>
-                    <th scope="row">Zoho Customer Email</th>
-                    <td>{{ customer.email }}</td>
-                </tr>
-                <tr>
-                    <th scope="row">Zoho Customer Phone</th>
-                    <td>{{ customer.phone }}</td>
-                </tr>
-                <tr>
-                    <th scope="row">Zoho Company Name</th>
-                    <td>{{ customer.company_name }}</td>
+                    <th scope="row">Zoho Item Name</th>
+                    <td>{{ item.name }}</td>
                 </tr>
                 <tr>
                     <th scope="row">Zoho QB List ID</th>
-                    <td>{{ customer.qb_list_id }}</td>
+                    <td>{{ item.qb_list_id }}</td>
                 </tr>
                 <tr>
                     <th scope="row">Coincidences by Order</th>
                     <td>
-                        {% if coincidences|length > 0%}
-                            <table class="table table-striped table-sm">
-                                <thead class="thead-light">
+                    {% if coincidences|length > 0 %}
+                        <table class="table table-striped table-sm">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>QB Item Name</th>
+                                    <th>Coincidence Name</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for coincidence in coincidences %}
                                     <tr>
-                                        <th>QB Customer Name</th>
-                                        <th>Email</th>
-                                        <th>Coincidence Email</th>
-                                        <th>Phone</th>
-                                        <th>Coincidence Phone</th>
-                                        <th>Company Name</th>
-                                        <th>Action</th>
+                                        <td>{{ coincidence.qb_item_name }}</td>
+                                        <td>{{ coincidence.coincidence_name }}</td>
+                                        <td><button class="btn btn-info btn-sm" onclick="matchRow(this, '{{ item.item_id }}', '{{ coincidence.qb_item_list_id }}')">Match</button></td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    {% for coincidence in coincidences %}
-                                        <tr>
-                                            <td>{{ coincidence.qb_customer_name }}</td>
-                                            <td>{{ coincidence.email }}</td>
-                                            <td>{{ coincidence.coincidence_email }}</td>
-                                            <td>{{ coincidence.phone }}</td>
-                                            <td>{{ coincidence.coincidence_phone }}</td>
-                                            <td>{{ coincidence.company_name }}</td>
-                                            <td><button class="btn btn-info btn-sm" onclick="matchRow(this, '{{ customer.contact_id }}', '{{ coincidence.qb_customer_list_id }}')">Match</button></td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        {% else %}
-                            No coincidences found.
-                        {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        No coincidences found.
+                    {% endif %}
                     </td>
                 </tr>
             </tbody>
         </table>
     {% else %}
         <div class="alert alert-warning" role="alert">
-            No customer found.
+            No item found.
         </div>
     {% endif %}
-    <a class="btn btn-success btn-sm" href="{% url 'api_zoho_customers:list_customers' %}">Back to list</a>
+    <a class="btn btn-success btn-sm" href="{% url 'api_zoho_items:list_items' %}">Back to list</a>
 
 {% endblock %}
 
 {% block scripts %}
 <script>
-    function matchRow(button, contact_id, qb_customer_list_id) {
+    function matchRow(button, item_id, qb_item_list_id) {
         button.disabled = true;
         button.innerHTML = 'Matching...';
         var csrftoken = getCookie('csrftoken');
         Swal.fire({
             title: 'Are you sure?',
-            text: 'Do you want to match this customer?',
+            text: 'Do you want to match this item?',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
@@ -89,12 +73,12 @@
         }).then((result) => {
             if (result.isConfirmed) {
                 $.ajax({
-                    url: '/api_zoho_customers/match_one_customer_ajax/',
+                    url: '/api_zoho_items/match_one_item_ajax/',
                     type: 'POST',
                     data: {
                         'csrfmiddlewaretoken': csrftoken,
-                        'contact_id': contact_id,
-                        'qb_customer_list_id': qb_customer_list_id,
+                        'item_id': item_id,
+                        'qb_item_list_id': qb_item_list_id,
                         'action': 'match'
                     },
                     success: function(data) {

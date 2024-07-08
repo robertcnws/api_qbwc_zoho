@@ -6,6 +6,8 @@ from api_zoho.models import AppConfig
 from api_zoho_customers.models import ZohoCustomer 
 from django.utils.dateparse import parse_datetime 
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404
+from django.views.decorators.http import require_POST
 from django.db import transaction
 from django.db.models import Q
 from api_quickbook_soap.models import QbCustomer
@@ -17,6 +19,65 @@ import logging
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
+
+
+#############################################
+# Match one AJAX
+#############################################
+
+@require_POST
+def match_one_customer_ajax(request):
+    action = request.POST['action']
+    try:
+        qb_list_id = request.POST['qb_customer_list_id']
+        zoho_customer_id = request.POST['contact_id']
+        qb_customer = get_object_or_404(QbCustomer, list_id=qb_list_id)
+        zoho_customer = get_object_or_404(ZohoCustomer, contact_id=zoho_customer_id)
+        zoho_customer.qb_list_id = qb_list_id if action == 'match' else ''
+        zoho_customer.save()
+        qb_customer.matched = True if action == 'match' else False
+        qb_customer.save()
+        message = 'Customer matched successfully' if action == 'match' else 'Customer unmatched successfully'
+        return JsonResponse({'status': 'success', 'message': message})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    
+
+#############################################
+# Unmatch all AJAX
+#############################################
+
+@require_POST
+def unmatch_all_customers_ajax(request):
+    if request.method == 'POST':
+        unmatch_data = request.POST.get('unmatch_data')
+        if unmatch_data:
+            unmatch_data = json.loads(unmatch_data)
+            for item in unmatch_data:
+                qb_customer_list_id = item.get('qb_customer_list_id')
+                zoho_customer_id = item.get('zoho_customer_id')
+                
+                # Aquí puedes añadir la lógica para deshacer la coincidencia
+                # Ejemplo de cómo deshacer la coincidencia:
+                qb_customer = QbCustomer.objects.filter(list_id=qb_customer_list_id).first()
+                zoho_customer = ZohoCustomer.objects.filter(contact_id=zoho_customer_id).first()
+                if qb_customer and zoho_customer:
+                    # Ejemplo: Actualizar el estado de coincidencia
+                    qb_customer.matched = False
+                    qb_customer.save()
+                    zoho_customer.qb_list_id = ''
+                    zoho_customer.save()
+                
+            return JsonResponse({'status': 'success', 'message': 'All customers were successfully unmatched.'})
+        else:
+            return JsonResponse({'status': 'error', 'message': 'No data provided.'})
+    else:
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
+
+#############################################
+# View Customer Details
+#############################################
+
 
 @login_required(login_url='login')
 def view_customer(request, customer_id):

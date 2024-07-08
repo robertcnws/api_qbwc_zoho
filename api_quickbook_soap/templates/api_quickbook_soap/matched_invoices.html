@@ -1,26 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QBWC - Zoho Invoices List</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <!-- DataTables CSS -->
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
-    <style>
-        .centered-cell {
-            justify-content: center; /* Centrado horizontal */
-            align-items: center; /* Centrado vertical */
-            text-align: center; /* Centrado de texto */
-        }
-    </style>
-</head>
-<body>
+{% extends 'api_zoho/base.html' %}
+{% block content %}
     <div class="container-fluid mt-5">
         <div class="row" role="alert">
             <div class="col-12 d-flex justify-content-between align-items-center mb-3">
                 <h1>QBWC - Zoho Invoices List (Matched & Unmatched)</h1>
-                <a href="{% url 'api_quickbook_soap:quickbook_api_settings' %}" class="btn btn-warning">Back</a>
             </div>
         </div>
 
@@ -56,7 +39,6 @@
                     <table id="myTable" class="table table-bordered table-striped">
                         <thead class="thead-dark">
                             <tr>
-                                <th>No.</th>
                                 <th>Invoice ID</th>
                                 <th>Info General</th>
                                 <th>Info Items</th>
@@ -73,7 +55,6 @@
                             {% else %}
                                 <tr style="background-color: rgba(255, 255, 0, 0.1);">
                             {% endif %}
-                                    <td class="centered-cell">{{ forloop.counter }}</td>
                                     <td class="centered-cell">{{ invoice.invoice_id }}</td>
                                     <td class="centered-cell">
                                         <ul>
@@ -134,12 +115,9 @@
             </div>
         </div>
     </div>
+{% endblock %}
 
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <!-- DataTables JS -->
-    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+{% block scripts %}
     <script>
         $(document).ready( function () {
             $('#myTable').DataTable({
@@ -150,5 +128,4 @@
             });
         } );
     </script>
-</body>
-</html>
+{% endblock %}

@@ -1,23 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Display Matched Customers JSON</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <!-- DataTables CSS -->
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
-    <style>
-        pre {
-            background-color: #f4f4f4;
-            padding: 10px;
-            border: 1px solid #ccc;
-            overflow: auto;
-        }
-    </style>
-</head>
-<body>
+{%  extends 'api_zoho/base.html' %}
 
+{% block content %}
 <div class="container-fluid mt-5">
     {% csrf_token %}
     <div class="row">
@@ -25,8 +8,7 @@
             <h1>Matched Customers</h1>
         </div>
         <div class="col-4 d-flex justify-content-end align-items-center">
-            <a href="{% url 'api_quickbook_soap:matching_customers' %}" class="btn btn-warning mr-2">Back</a>
-            <a href="#" class="btn btn-info mr-2" onclick="unmatchAllFirst(this)">Unmatch All</a>
+            <a href="#" class="btn btn-info mr-2 {% if matched_customers|length == 0 %}disabled{% endif %}" onclick="unmatchAll(this)">Unmatch All</a>
         </div>
     </div>
 
@@ -44,23 +26,24 @@
                 <table id="myTable" class="table table-bordered table-striped">
                     <thead class="thead-dark">
                         <tr>
-                            <th>No.</th>
                             <th>Quick Book Customer</th>
                             <th>Zoho Customer</th>
-                            <th>QB List ID</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for item in matched_customers %}
 
-                            <tr class="main-row">
-                                <td>{{ forloop.counter }}</td>
+                            <tr class="main-row" data-customer-id="{{ item.zoho_customer_id }}" data-qb-id="{{ item.qb_customer_list_id }}">
                                 <td>{{ item.qb_customer_name }}</td>
-                                <td>{{ item.zoho_customer }}<br/>(ID: {{ item.zoho_customer_id }})</td>
-                                <td>{{ item.qb_customer_list_id }}</td>
                                 <td>
-                                    <button class="warning-button" onclick="unmatchRow(this, '{{ item.qb_customer_list_id }}', '{{ item.zoho_customer_id }}')">
+                                    {{ item.zoho_customer }}<br/>
+                                    (Email: {{ item.zoho_customer_email }})<br/>
+                                    (Phone: {{ item.zoho_customer_phone }})<br/>
+                                    (Company: {{ item.zoho_customer_company }})
+                                </td>
+                                <td>
+                                    <button class="btn btn-warning btn-sm" onclick="unmatchRow(this, '{{ item.qb_customer_list_id }}', '{{ item.zoho_customer_id }}')">
                                         Unmatch
                                     </button>
                                 </td>
@@ -73,15 +56,9 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
-<!-- Incluir jQuery y otras bibliotecas necesarias -->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
-<!-- Incluir DataTables JS -->
-<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
-<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/rowgroup/1.1.4/js/dataTables.rowGroup.min.js"></script>
+{% block scripts %}
 
 <script type="text/javascript">
     $(document).ready(function() {
@@ -94,62 +71,116 @@
     });
 
     function unmatchRow(button, qb_customer_list_id, zoho_customer_id) {
-        if (confirm('Are you sure you want to unmatch this customer?')) {
-            // Encontrar todas las filas relacionadas
-            var mainRow = $('.main-row').filter(function() {
-                return $(this).find('td:nth-child(3)').text().trim() === qb_customer_list_id;
-            });
-            var subRows = mainRow.nextUntil('.main-row');
-
-            // Enviar solicitud AJAX para guardar la coincidencia
-
-            var csrftoken = getCookie('csrftoken');
-            // Encontrar todas las filas principales
-            var mainRows = $('.main-row');
-            
-            // Eliminar todas las filas principales
-            $.ajax({
-                 url: '/api_quickbook_soap/match_one_customer_ajax/',
-                 type: 'POST',
-                 data: {
-                    'csrfmiddlewaretoken': csrftoken,
-                    'qb_customer_list_id': qb_customer_list_id,
-                    'zoho_customer_id': zoho_customer_id,
-                    'action': 'unmatch'
-                 },
-                 success: function(response) {
-                    console.log(response);
-                    window.location.reload();
-                 },
-                 error: function(response) {
-                     alert('Error matching items for customer');
-                 }
-             });
-        }
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'Do you want to unmatch this customer?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, unmatch it!',
+            cancelButtonText: 'Cancel',
+            reverseButtons: true,
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Obtener el token CSRF
+                var csrftoken = getCookie('csrftoken');
+                
+                // Enviar solicitud AJAX para deshacer la coincidencia
+                $.ajax({
+                    url: '/api_quickbook_soap/match_one_customer_ajax/',
+                    type: 'POST',
+                    data: {
+                        'csrfmiddlewaretoken': csrftoken,
+                        'qb_customer_list_id': qb_customer_list_id,
+                        'zoho_customer_id': zoho_customer_id,
+                        'action': 'unmatch'
+                    },
+                    success: function(response) {
+                        console.log(response);
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Unmatched!',
+                            text: 'The customer was successfully unmatched.',
+                            timer: 1500,
+                            timerProgressBar: true,
+                            willClose: () => {
+                                // Recargar la página después del éxito
+                                window.location.reload();
+                            }
+                        });
+                    },
+                    error: function(response) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'There was an error unmatching the customer.',
+                        });
+                    }
+                });
+            }
+        });
     }
 
-    function unmatchAllFirst(button) {
-        if (confirm('Are you sure you want to match all first items?')) {
-            var csrftoken = getCookie('csrftoken');
-            // Encontrar todas las filas principales
-            var mainRows = $('.main-row');
-            
-            // Eliminar todas las filas principales
-            $.ajax({
-                 url: '/api_quickbook_soap/match_all_first_customers_ajax/',
-                 type: 'POST',
-                 data: {
-                    'csrfmiddlewaretoken': csrftoken,
-                    'action': 'unmatch'
-                 },
-                 success: function(response) {
-                     window.location.reload();
-                 },
-                 error: function(response) {
-                     alert('Error matching items for customer');
-                 }
-             });
-        }
+    function unmatchAll(button) {
+        // Obtener el token CSRF
+        var csrftoken = getCookie('csrftoken');
+
+        // Crear un array para almacenar los datos a enviar
+        var unmatchData = [];
+        
+        // Recorrer todas las filas de la tabla y recopilar los datos
+        $('#myTable .main-row').each(function() {
+            var qbCustomerListId = $(this).data('qb-id');
+            var zohoCustomerId = $(this).data('customer-id');
+
+            unmatchData.push({
+                qb_customer_list_id: qbCustomerListId,
+                zoho_customer_id: zohoCustomerId
+            });
+        });
+
+        // Confirmar la acción
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'Do you really want to unmatch all customers?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, unmatch all!',
+            cancelButtonText: 'Cancel',
+            reverseButtons: true,
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Enviar solicitud AJAX para deshacer todas las coincidencias
+                $.ajax({
+                    url: '/api_zoho_customers/unmatch_all_customers_ajax/',
+                    type: 'POST',
+                    data: {
+                        'csrfmiddlewaretoken': csrftoken,
+                        'unmatch_data': JSON.stringify(unmatchData)
+                    },
+                    success: function(response) {
+                        console.log(response);
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Unmatched!',
+                            text: 'All customers were successfully unmatched.',
+                            timer: 1500,
+                            timerProgressBar: true,
+                            willClose: () => {
+                                // Recargar la página después del éxito
+                                window.location.reload();
+                            }
+                        });
+                    },
+                    error: function(response) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'There was an error unmatching the customers.',
+                        });
+                    }
+                });
+            }
+        });
     }
 
     function getCookie(name) {
@@ -171,5 +202,4 @@
 
 </script>
 
-</body>
-</html>
+{% endblock %}

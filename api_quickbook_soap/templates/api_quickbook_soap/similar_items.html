@@ -1,12 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Display Similar Items JSON</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <!-- DataTables CSS -->
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+{% extends 'api_zoho/base.html' %}
+{% block styles %}
     <style>
         pre {
             background-color: #f4f4f4;
@@ -15,8 +8,8 @@
             overflow: auto;
         }
     </style>
-</head>
-<body>
+{% endblock %}
+{% block content %}
 
 <div class="container-fluid mt-5"> <!-- Cambiado a container-fluid para ocupar todo el ancho -->
     {% csrf_token %}
@@ -25,9 +18,7 @@
             <h1>Similar Items</h1>
         </div>
         <div class="col-4 d-flex justify-content-end align-items-center">
-            <a href="{% url 'api_quickbook_soap:quickbook_api_settings' %}" class="btn btn-warning mr-2">Back</a>
             <a href="{% url 'api_quickbook_soap:matched_items' %}" class="btn btn-success mr-2">Matched Items</a>
-            <a href="#" class="btn btn-info mr-2" onclick="matchAllFirst(this)">Match All First</a>
         </div>
     </div>
 
@@ -45,9 +36,7 @@
                 <table id="myTable" class="table table-bordered table-striped">
                     <thead class="thead-dark">
                         <tr>
-                            <th>No.</th>
                             <th>Quick Book Item</th>
-                            <th>QB List ID</th>
                             <th>Zoho Items</th>
                             <th>Coincidence</th>
                             <th>Actions</th>
@@ -59,26 +48,22 @@
                                 {% for coincidence in item.coincidences_by_order %}
                                     {% if forloop.first %}
                                         <tr class="main-row">
-                                            <td>{{ forloop.parentloop.counter }}</td>
                                             <td>{{ item.qb_item_name }}</td>
-                                            <td>{{ item.qb_item_list_id }}</td>
                                             <td style="background-color: #f8d7da; font-weight: bold;">{{ coincidence.zoho_item }} <br/>(SKU: {{ coincidence.zoho_item_sku }})</td>
                                             <td style="background-color: #f8d7da; font-weight: bold;">{{ coincidence.coincidence }}</td>
                                             <td style="background-color: #f8d7da; font-weight: bold;">
-                                                <button class="edit-button" onclick="matchRow(this, '{{ item.qb_item_list_id }}', '{{ coincidence.zoho_item_id }}')">
+                                                <button class="btn btn-info btn-sm" onclick="matchRow(this, '{{ item.qb_item_list_id }}', '{{ coincidence.zoho_item_id }}')">
                                                     Match
                                                 </button>
                                             </td>
                                         </tr>
                                     {% else %}
                                         <tr class="sub-row">
-                                            <td>{{ forloop.parentloop.counter }}</td>
                                             <td>{{ item.qb_item_name }}</td>
-                                            <td>{{ item.qb_item_list_id }}</td>
                                             <td>{{ coincidence.zoho_item }} <br/><b>(SKU: {{ coincidence.zoho_item_sku }})</b></td>
                                             <td>{{ coincidence.coincidence }}</td>
                                             <td>
-                                                <button class="edit-button" onclick="matchRow(this, '{{ item.qb_item_list_id }}', '{{ coincidence.zoho_item_id }}')">
+                                                <button class="btn btn-info btn-sm" onclick="matchRow(this, '{{ item.qb_item_list_id }}', '{{ coincidence.zoho_item_id }}')">
                                                     Match
                                                 </button>
                                             </td>
@@ -87,9 +72,7 @@
                                 {% endfor %}
                             {% else %}
                                 <tr>
-                                    <td>{{ forloop.counter }}</td>
                                     <td>{{ item.qb_item_name }}</td>
-                                    <td>{{ item.qb_item_list_id }}</td>
                                     <td>No coincidences</td>
                                     <td></td>
                                     <td></td>
@@ -102,56 +85,59 @@
         </div>
     </div>
 </div>
-
-<!-- Incluir jQuery y otras bibliotecas necesarias -->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
-<!-- Incluir DataTables JS -->
-<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+    
+{% endblock %}
+    
+{% block scripts %}
 
 <script type="text/javascript">
-    $(document).ready(function() {
-        var table = $('#myTable').DataTable({
-            "paging": true,            
-            "pageLength": 5,          
-            "lengthMenu": [5, 10, 25, 50],
-            //"columnDefs": [
-            //    { 
-            //        "orderable": false, 
-            //        "targets": [1, 2, 3, 5] 
-            //    } 
-            //]
-        });
-    });
 
     function editRow(qb_item_list_id, zoho_item) {
         alert('Edit item: ' + qb_item_list_id + ' with Zoho item: ' + zoho_item);
     }
 
     function matchRow(button, qb_item_list_id, zoho_item_id) {
-        if (confirm('Are you sure you want to match this item?')) {
-            var csrftoken = getCookie('csrftoken');
-            
-            $.ajax({
-                 url: '/api_quickbook_soap/match_one_item_ajax/',
-                 type: 'POST',
-                 data: {
-                    'csrfmiddlewaretoken': csrftoken,
-                    'qb_item_list_id': qb_item_list_id,
-                    'zoho_item_id': zoho_item_id,
-                    'action': 'match'
-                 },
-                 success: function(response) {
-                    console.log(response);
-                     window.location.reload();
-                 },
-                 error: function(response) {
-                     alert('Error matching items for customer');
-                 }
-             });
-        }
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'Do you want to match this item?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, match it!',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                var csrftoken = getCookie('csrftoken');
+                $.ajax({
+                    url: '/api_quickbook_soap/match_one_item_ajax/',
+                    type: 'POST',
+                    data: {
+                        'csrfmiddlewaretoken': csrftoken,
+                        'qb_item_list_id': qb_item_list_id,
+                        'zoho_item_id': zoho_item_id,
+                        'action': 'match'
+                    },
+                    success: function(response) {
+                        console.log(response);
+                        Swal.fire(
+                            'Matched!',
+                            'Item has been matched.',
+                            'success'
+                        ).then(() => {
+                            window.location.reload();
+                        });
+                    },
+                    error: function(response) {
+                        Swal.fire(
+                            'Error!',
+                            'Error matching items for the item.',
+                            'error'
+                        );
+                    }
+                });
+            }
+        });
     }
 
     function matchAllFirst(button) {
@@ -190,6 +176,5 @@
         return cookieValue;
     }
 </script>
-
-</body>
-</html>
+    
+{% endblock %}
