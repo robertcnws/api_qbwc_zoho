@@ -6,6 +6,7 @@ from api_zoho_items.models import ZohoItem
 import logging
 import uuid
 import re
+import os
 
 # Configura el logging
 logging.basicConfig(level=logging.DEBUG)
@@ -95,6 +96,11 @@ def generate_item_query_response():
                     <IncludeRetElement>ListID</IncludeRetElement>
                     <IncludeRetElement>Name</IncludeRetElement>
                   </ItemInventoryQueryRq>'''
+                  
+    # data_xml = '''<ItemSalesTaxQueryRq requestID="2">
+    #                 <IncludeRetElement>ListID</IncludeRetElement>
+    #                 <IncludeRetElement>Name</IncludeRetElement>
+    #               </ItemSalesTaxQueryRq>'''
     
     request_xml = f'''<?qbxml version="8.0"?>
                     <QBXML>
@@ -354,28 +360,41 @@ def generate_invoice_add_response():
             else:
                 zoho_item = ZohoItem.objects.get(Q(sku=sku))
                 
-            if zoho_item:  
+            if zoho_item: 
             
                 if zoho_item.qb_list_id:
                     
-                    counter_items_with_list_id += 1
+                    regex = re.compile(r'^[A-Za-z0-9]{8}-\d{10}$')
                     
-                    items_xml += f'''<InvoiceLineAdd>
-                                    <ItemRef>
-                                        <ListID>{zoho_item.qb_list_id}</ListID>
-                                    </ItemRef>
-                                    <Desc>{desc}</Desc>
-                                    <Quantity>{quantity}</Quantity>
-                                    <Rate>{rate}</Rate>
-                                </InvoiceLineAdd>
-                                '''
+                    if regex.match(zoho_item.qb_list_id):
+                    
+                        counter_items_with_list_id += 1
+                        
+                        items_xml += f'''<InvoiceLineAdd>
+                                        <ItemRef>
+                                            <ListID>{zoho_item.qb_list_id}</ListID>
+                                        </ItemRef>
+                                        <Desc>{desc}</Desc>
+                                        <Quantity>{quantity}</Quantity>
+                                        <Rate>{rate}</Rate>
+                                    </InvoiceLineAdd>
+                                    '''
+                    else:
+                        logger.debug(f'Item {zoho_item} has a QB List ID that is not valid')
+                        # Creando el listado de customer unmatched
+                        info_item_unmatched = {
+                            'zoho_item_id': zoho_item.item_id,
+                            'zoho_item_unmatched': zoho_item.name,
+                            'reason': 'Item QB List ID is not valid'
+                        }
+                        items_unmatched.append(info_item_unmatched)
                 else:
                     logger.debug(f'Item {zoho_item} has no QB List ID')
                     # Creando el listado de customer unmatched
                     info_item_unmatched = {
                         'zoho_item_id': zoho_item.item_id,
                         'zoho_item_unmatched': zoho_item.name,
-                        'reason': 'Item is not matched in QuickBooks'
+                        'reason': 'Item has no QB List ID'
                     }
                     items_unmatched.append(info_item_unmatched)
             else:
@@ -384,7 +403,7 @@ def generate_invoice_add_response():
                 info_item_unmatched = {
                     'zoho_item_id': None,
                     'zoho_item_unmatched': desc,
-                    'reason': 'Item is not matched in Zoho Items'
+                    'reason': 'Item does not exist in Zoho Items'
                 }
                 items_unmatched.append(info_item_unmatched)
                 
@@ -416,6 +435,8 @@ def generate_invoice_add_response():
                     
                     if items_xml != '':
                         
+                        sales_tax_list_id = os.environ.get('SALES_TAX_LIST_ID')
+                        
                         data_xml += f'''<InvoiceAddRq requestID="{i + 2}">
                                         <InvoiceAdd>
                                             <CustomerRef>   
@@ -435,6 +456,11 @@ def generate_invoice_add_response():
                                                 <FullName>{terms}</FullName>
                                             </TermsRef>
                                             {items_xml}
+                                            <InvoiceLineAdd>
+                                                <ItemRef>
+                                                    <ListID>{sales_tax_list_id}</ListID>
+                                                </ItemRef>
+                                            </InvoiceLineAdd>
                                         </InvoiceAdd>
                                     </InvoiceAddRq>'''
                                 

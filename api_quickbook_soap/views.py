@@ -465,6 +465,7 @@ def start_qbwc_query_request(request, query_object_name, list_of_objects):
     if request.method == 'POST':
         xml_data = request.body.decode('utf-8')
         # logger.debug(f"Received XML data: {xml_data}")
+        # if 'ItemSalesTax' in xml_data:
         if f'{query_object_name}Ret' in xml_data:
             xml_dict = xmltodict.parse(xml_data)
             response_xml = xml_dict['soap:Envelope']['soap:Body']['receiveResponseXML']['response']

@@ -3,7 +3,7 @@
     <div class="container-fluid mt-5">
         <div class="row" role="alert">
             <div class="col-12 d-flex justify-content-between align-items-center mb-3">
-                <h1>QBWC - Zoho Invoices List (Matched & Unmatched)</h1>
+                <h1>QBWC - Zoho Invoices List</h1>
             </div>
         </div>
 
@@ -15,7 +15,7 @@
                     </p>
                 </div>
                 <div class="col-3">
-                    <p class="alert alert-warning">
+                    <p class="alert alert-warning" style="font-size: small">
                         There are <b>{{ unprocessed_number }}</b> invoices not processed.
                     </p>
                 </div>
@@ -39,7 +39,6 @@
                     <table id="myTable" class="table table-bordered table-striped">
                         <thead class="thead-dark">
                             <tr>
-                                <th>Invoice ID</th>
                                 <th>Info General</th>
                                 <th>Info Items</th>
                                 <th>Unmatched Customer</th>
@@ -55,7 +54,6 @@
                             {% else %}
                                 <tr style="background-color: rgba(255, 255, 0, 0.1);">
                             {% endif %}
-                                    <td class="centered-cell">{{ invoice.invoice_id }}</td>
                                     <td class="centered-cell">
                                         <ul>
                                             <li>
@@ -69,7 +67,7 @@
                                     <td class="centered-cell">
                                         <ul>
                                             {% for item in invoice.line_items %}
-                                                <li>{{ item.description }} (Total Item: <b>{{ item.item_total }})</b></li>
+                                                <li>{{ item.description }}<br/>(Total Item: <b>{{ item.item_total }})</b></li>
                                             {% endfor %}
                                         </ul>
                                     </td>
@@ -79,7 +77,6 @@
                                                {% for item in invoice.customer_unmatched %}
                                                     <li>
                                                         {{ item.zoho_customer_unmatched }}<br/>
-                                                        ID: <b>{{ item.zoho_customer_id }}</b><br/>
                                                         Reason: <b>{{ item.reason }}</b>
                                                     </li>
                                                 {% endfor %}
@@ -96,7 +93,6 @@
                                                 {% for item in invoice.items_unmatched %}
                                                     <li>
                                                         {{ item.zoho_item_unmatched }}<br/>
-                                                        ID: <b>{{ item.zoho_item_id }}</b><br/>
                                                         Reason: <b>{{ item.reason }}</b>
                                                     </li>
                                                 {% endfor %}

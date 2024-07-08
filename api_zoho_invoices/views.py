@@ -11,6 +11,7 @@ from api_zoho_invoices.models import ZohoFullInvoice
 import requests
 import json
 import logging
+import datetime as dt
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -36,10 +37,14 @@ def load_invoices(request):
     app_config = AppConfig.objects.first()
     headers = api_zoho_views.config_headers(request)
     invoices_saved = list(ZohoFullInvoice.objects.all())
+    # today = dt.date.today().strftime('%Y-%m-%d')
+    today = '2024-06-28'
     params = {
         'organization_id': app_config.zoho_org_id,  # ID de la organización en Zoho Books
         'page': 1,       # Página inicial
-        'per_page': 200  # Cantidad de resultados por página
+        'per_page': 200,  # Cantidad de resultados por página
+        'date_start': f'{today}',  # Filtrar por fecha actual
+        'date_end': f'{today}'     # Filtrar por fecha actual
     }
      
     url = f'{settings.ZOHO_URL_READ_INVOICES}'
@@ -77,6 +82,8 @@ def load_invoices(request):
             return JsonResponse({"error": "Failed to fetch invoices"}, status=500)
     
     existing_invoices = {invoice.invoice_id: invoice for invoice in invoices_saved}
+    
+    logger.info(f"Invoices to get: {invoices_to_get}")
 
     for data in invoices_to_get:
         new_invoice = create_invoice_instance(data)

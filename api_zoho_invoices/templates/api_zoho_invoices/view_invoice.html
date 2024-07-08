@@ -1,0 +1,154 @@
+{% extends 'api_zoho/base.html'%}
+
+{% block content %}
+
+    {% if customer %}
+        <h1 class="mb-4">Invoice Details</h1>
+        <table class="table table-bordered">
+            <tbody>
+                <tr>
+                    <th scope="row">Invoice Number</th>
+                    <td>{{ customer.contact_name }}</td>
+                </tr>
+                <tr>
+                    <th scope="row">Customer</th>
+                    <td>{{ customer.email }}</td>
+                </tr>
+                <tr>
+                    <th scope="row">Date</th>
+                    <td>{{ customer.phone }}</td>
+                </tr>
+                <tr>
+                    <th scope="row">Amount</th>
+                    <td>{{ customer.company_name }}</td>
+                </tr>
+                
+                <tr>
+                    <th scope="row">Coincidences by Order</th>
+                    <td>
+                        {% if coincidences|length > 0%}
+                            <table class="table table-striped table-sm">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>QB Customer Name</th>
+                                        <th>Email</th>
+                                        <th>Coincidence Email</th>
+                                        <th>Phone</th>
+                                        <th>Coincidence Phone</th>
+                                        <th>Company Name</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for coincidence in coincidences %}
+                                        <tr>
+                                            <td>{{ coincidence.qb_customer_name }}</td>
+                                            <td>{{ coincidence.email }}</td>
+                                            <td>{{ coincidence.coincidence_email }}</td>
+                                            <td>{{ coincidence.phone }}</td>
+                                            <td>{{ coincidence.coincidence_phone }}</td>
+                                            <td>{{ coincidence.company_name }}</td>
+                                            <td><button class="btn btn-info btn-sm" onclick="matchRow(this, '{{ customer.contact_id }}', '{{ coincidence.qb_customer_list_id }}')">Match</button></td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        {% else %}
+                            No coincidences found.
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    {% else %}
+        <div class="alert alert-warning" role="alert">
+            No customer found.
+        </div>
+    {% endif %}
+    <a class="btn btn-success btn-sm" href="{% url 'api_zoho_customers:list_customers' %}">Back to list</a>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function matchRow(button, contact_id, qb_customer_list_id) {
+        button.disabled = true;
+        button.innerHTML = 'Matching...';
+        var csrftoken = getCookie('csrftoken');
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'Do you want to match this customer?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, match it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '/api_zoho_customers/match_one_customer_ajax/',
+                    type: 'POST',
+                    data: {
+                        'csrfmiddlewaretoken': csrftoken,
+                        'contact_id': contact_id,
+                        'qb_customer_list_id': qb_customer_list_id,
+                        'action': 'match'
+                    },
+                    success: function(data) {
+                        if (data.status == 'success') {
+                            button.innerHTML = 'Matched';
+                            button.classList.remove('btn-info');
+                            button.classList.add('btn-success');
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: data.message,
+                                willClose: () => {
+                                    // Redirige a la página anterior
+                                    window.history.back();
+                                }
+                            });
+                        } else {
+                            button.disabled = false;
+                            button.innerHTML = 'Match';
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: data.message
+                            });
+                        }
+                    },
+                    error: function() {
+                        button.disabled = false;
+                        button.innerHTML = 'Match';
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Something went wrong.'
+                        });
+                    }
+                });
+            } else {
+                button.disabled = false;
+                button.innerHTML = 'Match';
+            }
+        });
+        
+    }
+
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+{% endblock %}
