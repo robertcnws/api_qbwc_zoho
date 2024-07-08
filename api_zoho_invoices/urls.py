@@ -6,4 +6,5 @@ app_name = 'api_zoho_invoices'
 
 urlpatterns = [
     path("list_invoices/", views.list_invoices, name="list_invoices"),
+    path("load_invoices/", views.load_invoices, name="load_invoices"),
 ]

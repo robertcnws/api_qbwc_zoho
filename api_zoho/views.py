@@ -9,7 +9,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from .models import AppConfig
-from .forms import ApiZohoForm, LoginForm
+from .forms import ApiZohoForm, LoginForm, AppConfigForm
 
 #############################################
 # Configura el logging
@@ -28,7 +28,7 @@ def login_view(request):
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request, user)
-                return redirect('home')
+                return redirect('api_zoho:zoho_api_settings')
             else:
                 form.add_error(None, 'Username or password is incorrect')
         else:
@@ -161,7 +161,8 @@ def zoho_api_settings(request):
         "zoho_connection_configured": app_config.zoho_connection_configured,
         "active_page": "settings",
     }
-    return render(request, "api_zoho/zoho_api_settings.html", context)
+    # return render(request, "api_zoho/zoho_api_settings.html", context)
+    return render(request, "api_zoho/home.html", context)
 
 
 @login_required(login_url='login')
@@ -201,4 +202,44 @@ def config_headers(request):
 
 @login_required(login_url='login')
 def home(request):
-    return render(request, 'api_zoho/home.html')    
+    return render(request, 'api_zoho/base.html')    
+
+
+# @login_required(login_url='login')  
+# def application_settings(request):
+#     app_config = AppConfig.objects.first()
+#     if request.method == 'POST':
+#         app_config.zoho_client_id = request.POST.get('zoho_client_id')
+#         logger.info(app_config.zoho_client_id)  
+#         app_config.zoho_client_secret = request.POST.get('zoho_client_secret')
+#         app_config.zoho_redirect_uri = request.POST.get('zoho_redirect_uri')
+#         app_config.zoho_org_id = request.POST.get('zoho_organization_id')
+#         app_config.qb_username = request.POST.get('qb_username')
+#         app_config.qb_password = request.POST.get('qb_password')
+#         app_config.save()
+#         messages.success(request, 'Application settings have been updated successfully.')
+#     context = {
+#         'app_config': app_config
+#     }
+#     return render(request, 'api_zoho/application_settings.html', context=context)
+
+
+@login_required(login_url='login')  
+def application_settings(request):
+    app_config = AppConfig.objects.first()
+
+    if request.method == "POST":
+        form = AppConfigForm(request.POST, instance=app_config)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Application settings have been updated successfully.')
+            return redirect('api_zoho:application_settings')  # Asegúrate de redirigir a la misma página o a otra página de éxito
+        else:
+            messages.error(request, 'There was an error updating application settings. Please correct the errors below.')
+    else:
+        form = AppConfigForm(instance=app_config)
+
+    context = {
+        'form': form,  # Cambia app_config a form para pasar el formulario al template
+    }
+    return render(request, 'api_zoho/application_settings.html', context=context)

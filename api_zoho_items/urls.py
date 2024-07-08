@@ -6,4 +6,5 @@ app_name = 'api_zoho_items'
 
 urlpatterns = [
     path("list_items/", views.list_items, name="list_items"),
+    path("load_items/", views.load_items, name="load_items"),
 ]

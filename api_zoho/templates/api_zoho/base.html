@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>API Zoho Quick Books Integration</title>
+        <!-- Bootstrap CSS -->
+        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+        <!-- Incluye DataTables CSS -->
+        <link href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.min.css" rel="stylesheet">
+        {% block styles %}{% endblock %}
+    </head>
+    <body>
+        <div class="container-fluid mt-5 shadow p-3 mb-5 bg-white rounded" style="width:90%">
+            <div class="row">
+                <!-- Sidebar Navigation -->
+                <nav class="col-md-3 d-none d-md-block bg-light sidebar">
+                    <div class="sidebar-sticky">
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                <a class="nav-link active" href="#">
+                                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'api_zoho_customers:list_customers' %}">
+                                    <i class="fas fa-users"></i> Customers
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'api_zoho_items:list_items' %}">
+                                    <i class="fas fa-box"></i> Items
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'api_zoho_invoices:list_invoices' %}">
+                                    <i class="fas fa-file-invoice-dollar"></i> Invoices
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'api_zoho:application_settings' %}">
+                                    <i class="fas fa-cog"></i> Settings
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+
+                <!-- Main Content -->
+                <main role="main" class="col-md-9 ml-sm-auto col-lg-9 px-4">
+                    {% block content %}{% endblock %}
+                </main>
+            </div>
+        </div>
+
+        <!-- Bootstrap JS, Popper.js, and jQuery -->
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        <!-- Incluye Font Awesome JS -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js"></script>
+        <!-- Incluye DataTables JS -->
+        <script src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js"></script>
+
+        {% block scripts %}{% endblock %}
+
+    </body>
+</html>

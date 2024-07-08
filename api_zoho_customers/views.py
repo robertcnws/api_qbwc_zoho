@@ -7,15 +7,94 @@ from api_zoho_customers.models import ZohoCustomer
 from django.utils.dateparse import parse_datetime 
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
+from django.db.models import Q
+from api_quickbook_soap.models import QbCustomer
+import pandas as pd
+import rapidfuzz
 import requests
+import json
 import logging
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
+@login_required(login_url='login')
+def view_customer(request, customer_id):
+    zoho_customer = ZohoCustomer.objects.get(id=customer_id)
+
+    # Consultar los datos necesarios de las tablas
+    qb_customers = QbCustomer.objects.filter(matched=False, never_match=False).values_list('list_id', 'name', 'email', 'phone')
+
+    # Convertir a DataFrames de Pandas
+    qb_df = pd.DataFrame(list(qb_customers), columns=['list_id', 'name', 'email', 'phone'])
+
+    # Preparar arrays para comparación
+    qb_customers_data = qb_df[['list_id', 'name', 'email', 'phone']].to_dict(orient='records')
+    zoho_email = zoho_customer.email
+    zoho_phone = zoho_customer.phone
+    dependences_list = []
+
+    # Comparar clientes usando `rapidfuzz` para comparación de cadenas
+        
+    if not zoho_customer.qb_list_id:
+        for qb_customer_data in qb_customers_data:
+            qb_email = qb_customer_data['email']
+            qb_phone = qb_customer_data['phone']
+            
+            if (zoho_email or zoho_phone) and (qb_email or qb_phone):
+                    # Comparar email y teléfono usando `rapidfuzz`
+                seem_email = rapidfuzz.fuzz.ratio(zoho_email, qb_email) / 100 if zoho_email and qb_email else 0
+                seem_phone = rapidfuzz.fuzz.ratio(zoho_phone, qb_phone) / 100 if zoho_phone and qb_phone else 0
+                
+                logger.debug(f"Comparing {zoho_email} with {qb_email} and {zoho_phone} with {qb_phone}")
+                logger.debug(f"Email similarity: {seem_email}, Phone similarity: {seem_phone}")
+
+                if seem_email > 0.7 or seem_phone > 0.7:
+                        # Agregar coincidencias a la lista
+                    dependences_list.append({
+                            'qb_customer_list_id': qb_customer_data['list_id'],
+                            'qb_customer_name': qb_customer_data['name'],
+                            'email': qb_email,
+                            'seem_email': seem_email,
+                            'coincidence_email': f'{round(seem_email * 100, 2)} %',
+                            'phone': qb_phone,
+                            'seem_phone': seem_phone,
+                            'coincidence_phone': f'{round(seem_phone * 100, 2)} %',
+                            'company_name': qb_customer_data['name']  # Asegúrate de usar el campo correcto si es necesario
+                    })
+
+            if dependences_list:
+                # Ordenar dependencias por `seem_email`
+                sorted_dependences_list = sorted(dependences_list, key=lambda x: x['seem_email'], reverse=True)
+            else:
+                sorted_dependences_list = []
+    else:
+            # Si ya tiene un `qb_list_id`, no tiene dependencias
+        sorted_dependences_list = []
+    
+    context = {'customer': zoho_customer, 'coincidences' : sorted_dependences_list}
+    
+    return render(request, 'api_zoho_customers/view_customer.html', context)
+
 
 @login_required(login_url='login')
-def list_customers(request):
+def  list_customers(request):
+    # Después de obtener todos los clientes, renderiza la plantilla con la lista de clientes
+    customers_list_query = ZohoCustomer.objects.all()
+    batch_size = 200  # Ajusta este tamaño según tus necesidades
+    customers_list = []
+    
+    # Dividir en partes y procesar cada parte
+    for i in range(0, customers_list_query.count(), batch_size):
+        batch = customers_list_query[i:i + batch_size]
+        customers_list.extend(batch)  # Agregar datos al acumulador
+    
+    context = {'customers': customers_list}
+    return render(request, 'api_zoho_customers/list_customers.html', context)
+
+
+@login_required(login_url='login')
+def load_customers(request):
     app_config = AppConfig.objects.first()
     headers = api_zoho_views.config_headers(request)  # Asegúrate de que esto esté configurado correctamente
     customers_saved = list(ZohoCustomer.objects.all())
@@ -64,19 +143,80 @@ def list_customers(request):
                 ZohoCustomer.objects.bulk_create(batch)
     
     save_customers_in_batches(customers_to_save, batch_size=100)
+    
+    return render(request, 'api_zoho_customers/load_customers.html')
 
-    # Después de obtener todos los clientes, renderiza la plantilla con la lista de clientes
-    customers_list_query = ZohoCustomer.objects.all()
-    batch_size = 200  # Ajusta este tamaño según tus necesidades
-    customers_list = []
-    
-    # Dividir en partes y procesar cada parte
-    for i in range(0, customers_list_query.count(), batch_size):
-        batch = customers_list_query[i:i + batch_size]
-        customers_list.extend(batch)  # Agregar datos al acumulador
-    
-    context = {'customers': customers_list}
-    return render(request, 'api_zoho_customers/list_customers.html', context)
+
+@login_required(login_url='login')
+def manage_customers(request):
+    similar_customers = []
+
+    # Consultar los datos necesarios de las tablas
+    qb_customers = QbCustomer.objects.filter(matched=False, never_match=False).values_list('list_id', 'name', 'email', 'phone')
+    zoho_customers = ZohoCustomer.objects.all().values_list('contact_id', 'customer_name', 'email', 'phone', 'qb_list_id', 'company_name')
+
+    # Convertir a DataFrames de Pandas
+    qb_df = pd.DataFrame(list(qb_customers), columns=['list_id', 'name', 'email', 'phone'])
+    zoho_df = pd.DataFrame(list(zoho_customers), columns=['contact_id', 'customer_name', 'email', 'phone', 'qb_list_id', 'company_name'])
+
+    # Preparar arrays para comparación
+    qb_customers_data = qb_df[['list_id', 'name', 'email', 'phone']].to_dict(orient='records')
+    zoho_emails = zoho_df['email'].to_numpy()
+    zoho_phones = zoho_df['phone'].to_numpy()
+
+    # Comparar clientes usando `rapidfuzz` para comparación de cadenas
+    for zoho_index, (zoho_email, zoho_phone) in enumerate(zip(zoho_emails, zoho_phones)):
+        dependences_list = []
+        if not zoho_df.iloc[zoho_index]['qb_list_id']:
+            for qb_customer_data in qb_customers_data:
+                qb_email = qb_customer_data['email']
+                qb_phone = qb_customer_data['phone']
+
+                # Asegurarse de que al menos uno de los dos campos (email o teléfono) no esté vacío
+                if (zoho_email or zoho_phone) and (qb_email or qb_phone):
+                    # Comparar email y teléfono usando `rapidfuzz`
+                    seem_email = rapidfuzz.fuzz.ratio(zoho_email, qb_email) / 100 if zoho_email and qb_email else 0
+                    seem_phone = rapidfuzz.fuzz.ratio(zoho_phone, qb_phone) / 100 if zoho_phone and qb_phone else 0
+
+                    if seem_email > 0.7 or seem_phone > 0.7:
+                        # Agregar coincidencias a la lista
+                        dependences_list.append({
+                            'qb_customer_list_id': qb_customer_data['list_id'],
+                            'qb_customer_name': qb_customer_data['name'],
+                            'email': qb_email,
+                            'seem_email': seem_email,
+                            'coincidence_email': f'{round(seem_email * 100, 2)} %',
+                            'phone': qb_phone,
+                            'seem_phone': seem_phone,
+                            'coincidence_phone': f'{round(seem_phone * 100, 2)} %',
+                            'company_name': qb_customer_data['name']  # Asegúrate de usar el campo correcto si es necesario
+                        })
+
+            if dependences_list:
+                # Ordenar dependencias por `seem_email`
+                sorted_dependences_list = sorted(dependences_list, key=lambda x: x['seem_email'], reverse=True)
+            else:
+                sorted_dependences_list = []
+        else:
+            # Si ya tiene un `qb_list_id`, no tiene dependencias
+            sorted_dependences_list = []
+
+        similar_customers.append({
+            'zoho_customer_id': zoho_df.iloc[zoho_index]['contact_id'],
+            'zoho_customer_name': zoho_df.iloc[zoho_index]['customer_name'],
+            'zoho_customer_email': zoho_email,
+            'zoho_customer_phone': zoho_phone,
+            'zoho_company_name': zoho_df.iloc[zoho_index]['company_name'],
+            'zoho_qb_list_id': zoho_df.iloc[zoho_index]['qb_list_id'],
+            'coincidences_by_order': sorted_dependences_list
+        })
+
+    context = {'customers': similar_customers}
+    return render(request, 'api_zoho_customers/manage_customers.html', context)
+
+
+def replace_single_quotes(data):
+    return json.dumps(data).replace("'", '"')
     
 
 def create_customer_instance(data):

@@ -15,9 +15,23 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-
 @login_required(login_url='login')  
 def list_items(request):
+    items_list_query = ZohoItem.objects.all()
+    batch_size = 200  # Ajusta este tamaño según tus necesidades
+    items_list = []
+    
+    # Dividir en partes y procesar cada parte
+    for i in range(0, items_list_query.count(), batch_size):
+        batch = items_list_query[i:i + batch_size]
+        items_list.extend(batch)  
+        
+    context = {'items': items_list}
+    return render(request, 'api_zoho_items/list_items.html', context)
+
+
+@login_required(login_url='login')  
+def load_items(request):
     app_config = AppConfig.objects.first()
     headers = api_zoho_views.config_headers(request)
     items_saved = list(ZohoItem.objects.all())
@@ -67,18 +81,8 @@ def list_items(request):
                 ZohoItem.objects.bulk_create(batch)
     
     save_items_in_batches(items_to_save, batch_size=100)
-
-    items_list_query = ZohoItem.objects.all()
-    batch_size = 200  # Ajusta este tamaño según tus necesidades
-    items_list = []
     
-    # Dividir en partes y procesar cada parte
-    for i in range(0, items_list_query.count(), batch_size):
-        batch = items_list_query[i:i + batch_size]
-        items_list.extend(batch)  
-        
-    context = {'items': items_list}
-    return render(request, 'api_zoho_items/list_items.html', context)
+    return render(request, 'api_zoho_items/load_items.html')
 
     
 

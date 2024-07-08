@@ -5,6 +5,7 @@ from datetime import datetime
 import api_zoho.views as api_zoho_views
 from django.conf import settings
 from django.db import transaction
+from django.contrib.auth.decorators import login_required
 from api_zoho.models import AppConfig   
 from api_zoho_invoices.models import ZohoFullInvoice 
 import requests
@@ -15,7 +16,23 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
+@login_required(login_url='login')
 def list_invoices(request):
+    invoice_list_query = ZohoFullInvoice.objects.all()
+    batch_size = 200  # Ajusta este tamaño según tus necesidades
+    invoice_list = []
+    
+    # Dividir en partes y procesar cada parte
+    for i in range(0, invoice_list_query.count(), batch_size):
+        batch = invoice_list_query[i:i + batch_size]
+        invoice_list.extend(batch)  
+        
+    context = {'invoices': invoice_list}
+    return render(request, 'api_zoho_invoices/list_invoices.html', context)
+
+
+@login_required(login_url='login')
+def load_invoices(request):
     app_config = AppConfig.objects.first()
     headers = api_zoho_views.config_headers(request)
     invoices_saved = list(ZohoFullInvoice.objects.all())
@@ -74,17 +91,7 @@ def list_invoices(request):
     
     save_invoices_in_batches(invoices_to_save, batch_size=100)
     
-    invoice_list_query = ZohoFullInvoice.objects.all()
-    batch_size = 200  # Ajusta este tamaño según tus necesidades
-    invoice_list = []
-    
-    # Dividir en partes y procesar cada parte
-    for i in range(0, invoice_list_query.count(), batch_size):
-        batch = invoice_list_query[i:i + batch_size]
-        invoice_list.extend(batch)  
-        
-    context = {'invoices': invoice_list}
-    return render(request, 'api_zoho_invoices/list_invoices.html', context)
+    return render(request, 'api_zoho_invoices/load_invoices.html')
     
 
 def create_invoice_instance(data):

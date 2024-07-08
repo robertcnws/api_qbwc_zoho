@@ -14,27 +14,36 @@ class AppConfig(models.Model):
     zoho_refresh_token = models.CharField(max_length=255, blank=True, null=True)
     zoho_access_token = models.CharField(max_length=255, blank=True, null=True)
     zoho_connection_configured = models.BooleanField(default=False)
+    # QBWC fields
     qb_username = models.CharField(max_length=255, blank=True, null=True)
     qb_password = models.CharField(max_length=255, blank=True, null=True)
     qb_owner_id = models.CharField(max_length=255, blank=True, null=True)
 
     def save(self, *args, **kwargs):
-        if not self.pk and AppConfig.objects.exists():
-            # Update the existing instance if there is one
-            self.pk = AppConfig.objects.get().pk
-
-        # Check if all required fields for Zoho connection are present
         required_fields = [
             self.zoho_client_id,
             self.zoho_client_secret,
             self.zoho_org_id,
             self.zoho_redirect_uri,
         ]
-
-        # Set zoho_connection_configured to True if all fields are not empty, else False
         self.zoho_connection_configured = all(field is not None and field != "" for field in required_fields)
+        if self.pk:
+            super(AppConfig, self).save(*args, **kwargs)
+        else:
+            AppConfig.objects.create(
+                zoho_client_id=self.zoho_client_id,
+                zoho_client_secret=self.zoho_client_secret,
+                zoho_org_id=self.zoho_org_id,
+                zoho_redirect_uri=self.zoho_redirect_uri,
+                zoho_refresh_time=self.zoho_refresh_time,
+                zoho_connection_configured=self.zoho_connection_configured,
+                qb_username=self.qb_username,
+                qb_password=self.qb_password,
+                qb_owner_id=self.qb_owner_id,
+            )
+        
 
-        super(AppConfig, self).save(*args, **kwargs)
+        
 
     def __str__(self):
         return "App Configuration"

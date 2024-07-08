@@ -75,16 +75,31 @@
                                     <ul class="list-group">
                                         <li class="list-group-item">
                                             <a href="{% url 'api_zoho_customers:list_customers' %}" class="text-decoration-none">
-                                                <i class="fas fa-users me-2"></i> Load Customers
+                                                <i class="fas fa-users me-2"></i> Customers (In DB)
                                             </a>
                                         </li>
                                         <li class="list-group-item">
                                             <a href="{% url 'api_zoho_items:list_items' %}" class="text-decoration-none">
-                                                <i class="fas fa-box me-2"></i> Load Items
+                                                <i class="fas fa-box me-2"></i> Items (In DB)
                                             </a>
                                         </li>
                                         <li class="list-group-item">
                                             <a href="{% url 'api_zoho_invoices:list_invoices' %}" class="text-decoration-none">
+                                                <i class="fas fa-file-invoice-dollar me-2"></i> Invoices (In DB)
+                                            </a>
+                                        </li>
+                                        <li class="list-group-item">
+                                            <a href="{% url 'api_zoho_customers:load_customers' %}" class="text-decoration-none">
+                                                <i class="fas fa-users me-2"></i> Load Customers
+                                            </a>
+                                        </li>
+                                        <li class="list-group-item">
+                                            <a href="{% url 'api_zoho_items:load_items' %}" class="text-decoration-none">
+                                                <i class="fas fa-box me-2"></i> Load Items
+                                            </a>
+                                        </li>
+                                        <li class="list-group-item">
+                                            <a href="{% url 'api_zoho_invoices:load_invoices' %}" class="text-decoration-none">
                                                 <i class="fas fa-file-invoice-dollar me-2"></i> Load Invoices
                                             </a>
                                         </li>
