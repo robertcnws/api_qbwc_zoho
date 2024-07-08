@@ -57,18 +57,3 @@
     </div>
     
 {% endblock %}
-
-{% block scripts %}
-
-    <script>
-        $(document).ready(function() {
-            $('#myTable').DataTable({
-                "paging": true,            
-                "pageLength": 5,          
-                "lengthMenu": [5, 10, 25, 50],
-                "ordering": true,
-            });
-        });
-    </script>
-    
-{% endblock %}

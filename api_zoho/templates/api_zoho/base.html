@@ -24,7 +24,7 @@
         <div class="container-fluid mt-5 shadow p-3 mb-5 bg-white rounded" style="width:90%">
             <div class="row">
                 <!-- Sidebar Navigation -->
-                <nav class="col-md-3 d-none d-md-block bg-light sidebar">
+                <nav class="col-md-2 d-none d-md-block bg-light sidebar">
                     <div class="sidebar-sticky">
                         <ul class="nav flex-column">
                             <li class="nav-item">
@@ -132,7 +132,7 @@
                 </nav>
 
                 <!-- Main Content -->
-                <main role="main" class="col-md-9 ml-sm-auto col-lg-9 px-4">
+                <main role="main" class="col-md-10 ml-sm-auto col-lg-10 px-4">
                     {% block content %}{% endblock %}
                 </main>
             </div>
@@ -154,7 +154,7 @@
             $(document).ready( function () {
                 $('#myTable').DataTable({
                     "paging": true,            
-                    "pageLength": 5,          
+                    "pageLength": 10,          
                     "lengthMenu": [5, 10, 25, 50],
                     "ordering": true,
                 });

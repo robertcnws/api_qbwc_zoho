@@ -57,14 +57,6 @@
 {% block scripts %}
 
 <script type="text/javascript">
-    $(document).ready(function() {
-        $('#myTable').DataTable({
-            "paging": true,            
-            "pageLength": 5,          
-            "lengthMenu": [5, 10, 25, 50],
-            "ordering": true
-        });
-    });
 
     function unmatchRow(button, qb_item_list_id, zoho_item_id) {
          Swal.fire({

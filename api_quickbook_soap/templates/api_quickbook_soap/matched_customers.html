@@ -38,9 +38,9 @@
                                 <td>{{ item.qb_customer_name }}</td>
                                 <td>
                                     {{ item.zoho_customer }}<br/>
-                                    (Email: {{ item.zoho_customer_email }})<br/>
-                                    (Phone: {{ item.zoho_customer_phone }})<br/>
-                                    (Company: {{ item.zoho_customer_company }})
+                                    (Email: {% if item.zoho_customer_email|length > 0 %} {{ item.zoho_customer_email }} {% else %} --- {% endif %})<br/>
+                                    (Phone: {% if item.zoho_customer_phone|length > 0 %} {{ item.zoho_customer_phone }} {% else %} --- {% endif %})<br/>
+                                    (Company: {% if item.zoho_customer_company|length > 0 %} {{ item.zoho_customer_company }} {% else %} --- {% endif %})
                                 </td>
                                 <td>
                                     <button class="btn btn-warning btn-sm" onclick="unmatchRow(this, '{{ item.qb_customer_list_id }}', '{{ item.zoho_customer_id }}')">
@@ -61,14 +61,6 @@
 {% block scripts %}
 
 <script type="text/javascript">
-    $(document).ready(function() {
-        $('#myTable').DataTable({
-            "paging": true,            
-            "pageLength": 5,          
-            "lengthMenu": [5, 10, 25, 50],
-            "ordering": true,
-        });
-    });
 
     function unmatchRow(button, qb_customer_list_id, zoho_customer_id) {
         Swal.fire({
