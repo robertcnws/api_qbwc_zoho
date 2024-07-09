@@ -55,6 +55,8 @@ def generate_auth_url(request):
 
 def get_access_token(client_id, client_secret, refresh_token):
     token_url = "https://accounts.zoho.com/oauth/v2/token"
+    if not refresh_token:
+        raise Exception("Refresh token is missing")
     payload = {
         "client_id": client_id,
         "client_secret": client_secret,
