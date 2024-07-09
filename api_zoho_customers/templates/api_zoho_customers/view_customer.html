@@ -70,12 +70,14 @@
             No customer found.
         </div>
     {% endif %}
-    <a class="btn btn-success btn-sm" href="{% url 'api_zoho_customers:list_customers' %}">Back to list</a>
+    {% comment %} <a class="btn btn-success btn-sm" href="{% url 'api_zoho_customers:list_customers' %}">Back to list</a> {% endcomment %}
+    <a class="btn btn-success btn-sm" href="#" onclick="backToList()">Back to list</a>
 
 {% endblock %}
 
 {% block scripts %}
 <script>
+
     function matchRow(button, contact_id, qb_customer_list_id) {
         button.disabled = true;
         button.innerHTML = 'Matching...';
@@ -140,20 +142,6 @@
         });
         
     }
-
-    function getCookie(name) {
-        var cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            var cookies = document.cookie.split(';');
-            for (var i = 0; i < cookies.length; i++) {
-                var cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
+    
 </script>
 {% endblock %}
