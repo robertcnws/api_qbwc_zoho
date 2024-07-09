@@ -177,14 +177,22 @@ def load_customers(request):
                 new_token = api_zoho_views.refresh_zoho_token()
                 headers['Authorization'] = f'Zoho-oauthtoken {new_token}'
                 response = requests.get(url, headers=headers, params=params)  # Reintenta la solicitud
-            response.raise_for_status()
-            customers = response.json()
-            if customers.get('contacts', []):
-                customers_to_get.extend(customers['contacts'])
-            if 'page_context' in customers and 'has_more_page' in customers['page_context'] and customers['page_context']['has_more_page']:
-                params['page'] += 1  # Avanza a la siguiente página
+            elif response.status_code != 200:
+                logger.error(f"Error fetching customers: {response.text}")
+                context = {
+                    'error': response.text,
+                    'status_code': response.status_code
+                }
+                return render(request, 'api_zoho/error.html', context)
             else:
-                break  # Sal del bucle si no hay más páginas
+                response.raise_for_status()
+                customers = response.json()
+                if customers.get('contacts', []):
+                    customers_to_get.extend(customers['contacts'])
+                if 'page_context' in customers and 'has_more_page' in customers['page_context'] and customers['page_context']['has_more_page']:
+                    params['page'] += 1  # Avanza a la siguiente página
+                else:
+                    break  # Sal del bucle si no hay más páginas
         except requests.exceptions.RequestException as e:
             logger.error(f"Error fetching customers: {e}")
             return JsonResponse({"error": "Failed to fetch customers"}, status=500)

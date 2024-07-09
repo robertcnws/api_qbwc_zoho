@@ -4,6 +4,10 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+    
+    run_before = [
+        ('admin', '__first__'),
+    ]
 
     dependencies = [
         ('api_zoho', '0002_appconfig_zoho_access_token'),

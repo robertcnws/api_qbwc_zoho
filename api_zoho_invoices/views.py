@@ -67,25 +67,32 @@ def load_invoices(request):
                 new_token = api_zoho_views.refresh_zoho_token()
                 headers['Authorization'] = f'Zoho-oauthtoken {new_token}'
                 response = requests.get(url, headers=headers, params=params)  # Reintenta la solicitud
-            response.raise_for_status()
-            invoices = response.json()
-            
-            if 'invoices' in invoices:
-                for invoice in invoices.get('invoices', []):
-                    data = json.loads(invoice) if isinstance(invoice, str) else invoice
-                    get_url = f'{settings.ZOHO_URL_READ_INVOICES}/{data.get("invoice_id")}/?organization_id={app_config.zoho_org_id}'
-                    response = requests.get(get_url, headers=headers)
-                    if response.status_code == 200:
-                        response.raise_for_status()
-                        full_invoice = response.json()
-                        data = json.loads(full_invoice.get('invoice')) if isinstance(full_invoice.get('invoice'), str) else full_invoice.get('invoice')
-                        invoices_to_get.append(data)
-                    
-            # Verifica si hay más páginas para obtener
-            if 'page_context' in invoices and 'has_more_page' in invoices['page_context'] and invoices['page_context']['has_more_page']:
-                params['page'] += 1  # Avanza a la siguiente página
+            elif response.status_code != 200:
+                logger.error(f"Error fetching customers: {response.text}")
+                context = {
+                    'error': response.text,
+                    'status_code': response.status_code
+                }
+                return render(request, 'api_zoho/error.html', context)
             else:
-                break  # Sal del bucle si no hay más páginas
+                response.raise_for_status()
+                invoices = response.json()
+                if 'invoices' in invoices:
+                    for invoice in invoices.get('invoices', []):
+                        data = json.loads(invoice) if isinstance(invoice, str) else invoice
+                        get_url = f'{settings.ZOHO_URL_READ_INVOICES}/{data.get("invoice_id")}/?organization_id={app_config.zoho_org_id}'
+                        response = requests.get(get_url, headers=headers)
+                        if response.status_code == 200:
+                            response.raise_for_status()
+                            full_invoice = response.json()
+                            data = json.loads(full_invoice.get('invoice')) if isinstance(full_invoice.get('invoice'), str) else full_invoice.get('invoice')
+                            invoices_to_get.append(data)
+                        
+                # Verifica si hay más páginas para obtener
+                if 'page_context' in invoices and 'has_more_page' in invoices['page_context'] and invoices['page_context']['has_more_page']:
+                    params['page'] += 1  # Avanza a la siguiente página
+                else:
+                    break  # Sal del bucle si no hay más páginas
         except requests.exceptions.RequestException as e:
             logger.error(f"Error fetching invoices: {e}")
             return JsonResponse({"error": "Failed to fetch invoices"}, status=500)

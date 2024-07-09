@@ -11,13 +11,13 @@ RUN pip install --upgrade pip
 RUN pip install gunicorn
 RUN pip install -r requirements.txt
 
-# Copy the current directory contents into the container
+# Copia el contenido del directorio al contenedor
 COPY . /app/
 
 # Expose port 8000 for the Django application
 EXPOSE 8000
 
-# Run the Django server
-# CMD ["gunicorn", "--bind", "0.0.0.0:8000", "project_api.wsgi:application"]
+# Ejecuta el script de inicialización y luego arranca Gunicorn
+CMD ["sh", "-c", "python manage.py makemigrations && python manage.py migrate && python init_script.py && gunicorn --bind 0.0.0.0:8000 project_api.wsgi:application"]
 
-CMD ["sh", "-c", "python manage.py makemigrations && python manage.py migrate && gunicorn --bind 0.0.0.0:8000 project_api.wsgi:application"]
+# CMD ["/app/project_api/init.sh"]

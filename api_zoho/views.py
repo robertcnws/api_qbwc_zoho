@@ -129,9 +129,9 @@ def get_refresh_token(request):
 @login_required(login_url='login')
 def zoho_api_settings(request):
     app_config = AppConfig.objects.first()
+    
     if not app_config:
         app_config = AppConfig.objects.create()
-    zoho_connection_configured = app_config.zoho_connection_configured
     connected = (
         app_config.zoho_connection_configured
         and app_config.zoho_refresh_token is not None

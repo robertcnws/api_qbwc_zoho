@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
-
 # Create your models here.
 class AppConfig(models.Model):
     app_id = models.AutoField(primary_key=True)
@@ -18,6 +17,7 @@ class AppConfig(models.Model):
     qb_username = models.CharField(max_length=255, blank=True, null=True)
     qb_password = models.CharField(max_length=255, blank=True, null=True)
     qb_owner_id = models.CharField(max_length=255, blank=True, null=True)
+    
 
     def save(self, *args, **kwargs):
         required_fields = [
@@ -28,22 +28,12 @@ class AppConfig(models.Model):
         ]
         self.zoho_connection_configured = all(field is not None and field != "" for field in required_fields)
         if self.pk:
-            super(AppConfig, self).save(*args, **kwargs)
+            return super(AppConfig, self).save(*args, **kwargs)
         else:
-            AppConfig.objects.create(
-                zoho_client_id=self.zoho_client_id,
-                zoho_client_secret=self.zoho_client_secret,
-                zoho_org_id=self.zoho_org_id,
-                zoho_redirect_uri=self.zoho_redirect_uri,
-                zoho_refresh_time=self.zoho_refresh_time,
-                zoho_connection_configured=self.zoho_connection_configured,
-                qb_username=self.qb_username,
-                qb_password=self.qb_password,
-                qb_owner_id=self.qb_owner_id,
-            )
-        
-
-        
+            if not AppConfig.objects.first():
+                super(AppConfig, self).save(*args, **kwargs)
+            else:
+                raise Exception("App Configuration already exists")
 
     def __str__(self):
         return "App Configuration"
@@ -59,6 +49,8 @@ class CustomUserManager(BaseUserManager):
 
     def create_superuser(self, username, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('is_superuser', True)
 
         return self.create_user(username, password, **extra_fields)
@@ -79,4 +71,3 @@ class LoginUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.username
-
