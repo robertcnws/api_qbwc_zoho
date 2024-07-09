@@ -53,10 +53,10 @@
                                             <td>{{ item.qb_customer_name }}</td>
                                             <td>{{ item.qb_customer_email }}</td>
                                             <td>{{ item.qb_customer_phone }}</td>
-                                            <td class="highlight">{{ coincidence.zoho_customer }}<br/>(ID: {{ coincidence.zoho_customer_id }})</td>
-                                            <td class="highlight">{{ coincidence.email }}<br/>(Match: {{ coincidence.coincidence_email }})</td>
-                                            <td class="highlight">{{ coincidence.phone }}<br/>(Match: {{ coincidence.coincidence_phone }})</td>
-                                            <td class="highlight">
+                                            <td class="highlight">{{ coincidence.zoho_customer }}</td>
+                                            <td class="highlight">{{ coincidence.email }}<br/>({{ coincidence.coincidence_email }})</td>
+                                            <td class="highlight">{{ coincidence.phone }}<br/>({{ coincidence.coincidence_phone }})</td>
+                                            <td class="text-center align-middle" class="highlight">
                                                 <button class="btn btn-info btn-sm" onclick="matchRow(this, '{{ item.qb_customer_list_id }}', '{{ coincidence.zoho_customer_id }}')">
                                                     Match
                                                 </button>
@@ -70,7 +70,7 @@
                                             <td>{{ coincidence.zoho_customer }}<br/>(ID: {{ coincidence.zoho_customer_id }})</td>
                                             <td>{{ coincidence.email }}<br/>(Match: {{ coincidence.coincidence_email }})</td>
                                             <td>{{ coincidence.phone }}<br/>(Match: {{ coincidence.coincidence_phone }})</td>
-                                            <td>
+                                            <td class="text-center align-middle">
                                                 <button class="btn btn-info btn-sm" onclick="matchRow(this, '{{ item.qb_customer_list_id }}', '{{ coincidence.zoho_customer_id }}')">
                                                     Match
                                                 </button>

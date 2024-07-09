@@ -37,7 +37,7 @@
                             <tr class="main-row" data-item-id="{{ item.zoho_item_id }}" data-qb-id="{{ item.qb_item_list_id }}">
                                 <td>{{ item.qb_item_name }}</td>
                                 <td>{{ item.zoho_item }} <br/>(SKU: {{ item.zoho_item_sku }})</td>
-                                <td>
+                                <td class="text-center align-middle">
                                     <button class="btn btn-warning btn-sm" onclick="unmatchRow(this, '{{ item.qb_item_list_id }}', '{{ item.zoho_item_id }}')">
                                         Unmatch
                                     </button>

@@ -1,4 +1,14 @@
 {% extends 'api_zoho/base.html' %}
+
+{% block styles %}
+    <style>
+        .col-1-5 {
+            flex: 0 0 12.5%; /* 1.5 / 12 = 0.125, que es 12.5% del ancho del contenedor */
+            max-width: 12.5%;
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
     <div class="container-fluid mt-5">
         <div class="row" role="alert">
@@ -7,27 +17,43 @@
             </div>
         </div>
 
-        <div class="row mt-3">
-            <div class="row col-12">
-                <div class="col-3">
-                    <p class="alert alert-info">
-                        There are <b>{{ invoices|length }}</b> invoices found.
+        <div class="container-fluid mt-3">
+            <div class="row">
+                <div class="col-1-5">
+                    <p class="alert alert-info" style="font-size: small">
+                        <b>{{ invoices|length }}</b> found
                     </p>
                 </div>
-                <div class="col-3">
+                <div class="col-1-5">
                     <p class="alert alert-warning" style="font-size: small">
-                        There are <b>{{ unprocessed_number }}</b> invoices not processed.
+                        <b>{{ unprocessed_number }}</b> not processed
                     </p>
                 </div>
-                <div class="col-3">
-                    <p class="alert alert-success">
-                        There are <b>{{ matched_number }}</b> matched invoices found.
+                <div class="col-1-5">
+                    <p class="alert alert-success" style="font-size: small">
+                        <b>{{ matched_number }}</b> matched
                     </p>
                 </div>
-                <div class="col-3">
-                    <p class="alert alert-danger">
-                        There are <b>{{ unmatched_number }}</b> unmatched invoices found.
+                <div class="col-1-5">
+                    <p class="alert alert-danger" style="font-size: small">
+                        <b>{{ unmatched_number }}</b> unmatched
                     </p>
+                </div>
+                <div class="col-4">
+                    <div class="container-fluid">
+                        <div class="form-inline">
+                            <label for="datetimepicker1" class="mr-2" style="font-size: small">Filter by date</label>
+                            <div class="input-group date" id="datetimepicker1" data-target-input="nearest">
+                                <input type="text" class="form-control datetimepicker-input" data-target="#datetimepicker1" placeholder="Filter by date"/>
+                                <div class="input-group-append" data-target="#datetimepicker1" data-toggle="datetimepicker">
+                                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-2">
+                    <a href="#" class="btn btn-primary btn-sm" onclick="forceToSync(this)">Sync Selected</a>
                 </div>
             </div>
         </div>
@@ -39,69 +65,58 @@
                     <table id="myTable" class="table table-bordered table-striped">
                         <thead class="thead-dark">
                             <tr>
-                                <th>Info General</th>
-                                <th>Info Items</th>
-                                <th>Unmatched Customer</th>
-                                <th>Unmatched Items</th>
+                                <th>Nr.</th>
+                                <th>Customer</th>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Sync?</th>
+                                <th>Force Sync?</th>
+                                <th>Details</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for invoice in invoices %}
                             {% if invoice.customer_unmatched or invoice.items_unmatched %}
-                                <tr style="background-color: rgba(255, 0, 0, 0.1);">
+                                <tr style="background-color: rgba(255, 0, 0, 0.1);" data-date="{{ invoice.date|date:"Y-m-d" }}">
                             {% elif invoice.inserted_in_qb %}
-                                <tr style="background-color: rgba(0, 255, 0, 0.1);">
+                                <tr style="background-color: rgba(0, 255, 0, 0.1);" data-date="{{ invoice.date|date:"Y-m-d" }}">
                             {% else %}
-                                <tr style="background-color: rgba(255, 255, 0, 0.1);">
+                                <tr style="background-color: rgba(255, 255, 0, 0.1);" data-date="{{ invoice.date|date:"Y-m-d" }}">
                             {% endif %}
-                                    <td class="centered-cell">
-                                        <ul>
-                                            <li>
-                                                Invoice number: <br/><b>{{ invoice.invoice_number }}</b><br/>
-                                                Customer name: <br/><b>{{ invoice.customer_name }}</b><br/>
-                                                Invoice date: <br/><b>{{ invoice.date }}</b><br/>
-                                                Amount: <b>{{ invoice.total }}</b>
-                                            </li>
-                                        </ul>
-                                    </td>
-                                    <td class="centered-cell">
-                                        <ul>
-                                            {% for item in invoice.line_items %}
-                                                <li>{{ item.description }}<br/>(Total Item: <b>{{ item.item_total }})</b></li>
-                                            {% endfor %}
-                                        </ul>
-                                    </td>
-                                    <td class="centered-cell">
+                                    <td class="centered-cell">{{ invoice.invoice_number }}</td>
+                                    <td class="centered-cell">{{ invoice.customer_name }}</td>
+                                    <td class="centered-cell">{{ invoice.date|date:"Y-m-d" }}</td>
+                                    <td class="centered-cell">{{ invoice.total }}</td>
+                                    <td class="text-center align-middle">
                                         {% if invoice.customer_unmatched %}
-                                            <ul>
-                                               {% for item in invoice.customer_unmatched %}
-                                                    <li>
-                                                        {{ item.zoho_customer_unmatched }}<br/>
-                                                        Reason: <b>{{ item.reason }}</b>
-                                                    </li>
-                                                {% endfor %}
-                                            </ul>
+                                            <b>ERROR</b>
                                         {% elif not invoice.inserted_in_qb and not invoice.customer_unmatched and not invoice.items_unmatched %}
-                                            <p class="alert alert-warning" style="text-align: center;">Not processed</p>
+                                            Not Synced
                                         {% else %}
-                                            <p class="alert alert-success" style="text-align: center;"><b>Matched</b></p>
+                                            <b>SUCCESS</b>
                                         {% endif %}
                                     </td>
-                                    <td class="centered-cell">
-                                        {% if invoice.items_unmatched %}
-                                            <ul>
-                                                {% for item in invoice.items_unmatched %}
-                                                    <li>
-                                                        {{ item.zoho_item_unmatched }}<br/>
-                                                        Reason: <b>{{ item.reason }}</b>
-                                                    </li>
-                                                {% endfor %}
-                                            </ul>
+                                    <td class="text-center align-middle">
+                                        {% if invoice.customer_unmatched %}
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" value="" id="{{ invoice.id }}" {% if invoice.force_to_sync %}checked{% endif %}>
+                                                <label class="form-check-label" for="{{ invoice.id }}">
+                                                    Force to sync?
+                                                </label>
+                                            </div>
                                         {% elif not invoice.inserted_in_qb and not invoice.customer_unmatched and not invoice.items_unmatched %}
-                                            <p class="alert alert-warning" style="text-align: center;">Not processed</p>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" value="" id="{{ invoice.id }}" {% if invoice.force_to_sync %}checked{% endif %}>
+                                                <label class="form-check-label" for="{{ invoice.id }}">
+                                                    Force to sync?
+                                                </label>
+                                            </div>
                                         {% else %}
-                                            <p class="alert alert-success" style="text-align: center;"><b>Matched</b></p>
+                                            <b>Synced</b>
                                         {% endif %}
+                                    </td>
+                                    <td class="text-center align-middle">
+                                        <a href="{% url 'api_zoho_invoices:view_invoice' invoice.id %}" class="btn btn-info btn-sm">View</a>
                                     </td>
                                 </tr>
                             {% endfor %} 
@@ -111,4 +126,136 @@
             </div>
         </div>
     </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+    <script>
+        $(document).ready(function() {
+            var today = new Date().toISOString().split('T')[0];
+            var table = $('#myTable').DataTable();
+
+            $('#datetimepicker1').datetimepicker({
+                format: 'YYYY-MM-DD', 
+                useCurrent: false,    
+                minDate: moment().subtract(1, 'years'), 
+                maxDate: moment(),   
+                defaultDate: today,   
+                daysOfWeekDisabled: [0, 6],
+            });
+
+            $('#datetimepicker1').on('click', function() {
+                $(this).datetimepicker('show');
+            });
+
+            //$('.input-group-append').on('click', function () {
+            //    $('#datetimepicker1').data('datetimepicker').toggle();
+            //});
+
+            $.fn.dataTable.ext.search.push(
+                function(settings, data, dataIndex) {
+                    var date = data[2]; // La columna de la fecha (ajusta el índice según tu tabla)
+                    var selectedDate = $('#datetimepicker1').data('datetimepicker').viewDate().format('YYYY-MM-DD');
+                    if (date === selectedDate) {
+                        return true;
+                    }
+                    return false;
+                }
+            );
+
+            // Mostrar solo las filas de hoy al cargar la página
+            table.draw();
+
+            $('#datetimepicker1').on('change.datetimepicker', function(e) {
+                table.draw();
+            });
+
+        });
+
+        function forceToSync(button) {
+            let counter = 0;
+
+            $('.form-check-input').each(function() {
+                if ($(this).is(':checked')) {
+                    counter++;
+                }
+            });
+
+            if (counter === 0) {
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Please select at least one item to force sync.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+
+            else{
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "Do you want to force sync selected items?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, force to sync!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        var csrftoken = getCookie('csrftoken');
+                        var invoices = [];
+                        $('.form-check-input').each(function() {
+                            if ($(this).is(':checked')) {
+                                invoices.push($(this).attr('id'));
+                            }
+                        });
+
+                        $.ajax({
+                            url: '/api_quickbook_soap/force_to_sync_invoices_ajax/',
+                            type: 'POST',
+                            data: {
+                                'csrfmiddlewaretoken': csrftoken,
+                                'invoices': JSON.stringify(invoices)
+                            },
+                            success: function(response) {
+                                Swal.fire(
+                                    'Success!',
+                                    'Selected invoices have been forced to sync.',
+                                    'success'
+                                ).then(() => {
+                                    window.location.reload();
+                                });
+                            },
+                            error: function(response) {
+                                Swal.fire(
+                                    'Error!',
+                                    'There was an error marking invoices force to sync.',
+                                    'error'
+                                );
+                            }
+                        });
+                    }
+                });
+
+            }
+        }
+
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    // Verificar si la cookie contiene el nombre buscado
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+    </script>
 {% endblock %}

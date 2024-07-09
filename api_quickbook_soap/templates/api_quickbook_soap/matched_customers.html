@@ -42,7 +42,7 @@
                                     (Phone: {% if item.zoho_customer_phone|length > 0 %} {{ item.zoho_customer_phone }} {% else %} --- {% endif %})<br/>
                                     (Company: {% if item.zoho_customer_company|length > 0 %} {{ item.zoho_customer_company }} {% else %} --- {% endif %})
                                 </td>
-                                <td>
+                                <td class="text-center align-middle">
                                     <button class="btn btn-warning btn-sm" onclick="unmatchRow(this, '{{ item.qb_customer_list_id }}', '{{ item.zoho_customer_id }}')">
                                         Unmatch
                                     </button>
@@ -174,23 +174,6 @@
             }
         });
     }
-
-    function getCookie(name) {
-        var cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            var cookies = document.cookie.split(';');
-            for (var i = 0; i < cookies.length; i++) {
-                var cookie = cookies[i].trim();
-                // Verificar si la cookie contiene el nombre buscado
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
-    
 
 </script>
 

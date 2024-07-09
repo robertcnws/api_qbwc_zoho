@@ -102,6 +102,25 @@ def qbwc_customers(request):
 
 
 #############################################
+# Force to sync AJAX methods
+#############################################
+
+@require_POST
+def force_to_sync_invoices_ajax(request):
+    try:
+        invoices_json = request.POST.get('invoices', '[]')  # Obtener los datos del POST
+        list_id = json.loads(invoices_json)  # Convertir JSON a lista
+        for invoice in list_id:
+            invoice_model = get_object_or_404(ZohoFullInvoice, id=invoice)
+            invoice_model.force_to_sync = True
+            invoice_model.save()
+        return JsonResponse({'status': 'success'})
+    except Exception as e:
+        logger.error(f"An error occurred: {e}")
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+
+
+#############################################
 # Never match AJAX methods
 #############################################
 

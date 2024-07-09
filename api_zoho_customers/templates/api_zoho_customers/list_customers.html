@@ -38,14 +38,14 @@
                                 <td>{{ customer.email }}</td>
                                 <td>{{ customer.phone }}</td>
                                 <td>{{ customer.company_name }}</td>
-                                <td>
+                                <td class="text-center align-middle">
                                     {% if not customer.qb_list_id or customer.qb_list_id == '' %} 
                                                 <span class="alert-danger">NO</span>
                                             {% else %} 
                                                 <span class="alert-success">YES</span> 
                                     {% endif %}
                                 </td>
-                                <td>
+                                <td class="text-center align-middle">
                                     <a href="{% url 'api_zoho_customers:view_customer' customer.id %}" class="btn btn-primary btn-sm">View</a>
                                 </td> 
                             </tr>

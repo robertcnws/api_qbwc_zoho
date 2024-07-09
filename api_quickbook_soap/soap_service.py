@@ -3,6 +3,7 @@ from api_zoho.models import AppConfig
 from api_zoho_invoices.models import ZohoFullInvoice
 from api_zoho_customers.models import ZohoCustomer
 from api_zoho_items.models import ZohoItem
+from datetime import date
 import logging
 import uuid
 import re
@@ -324,7 +325,11 @@ def generate_invoice_add_response_new_version():
 
 def generate_invoice_add_response():
     
-    invoices = ZohoFullInvoice.objects.filter(inserted_in_qb=False)
+    today = date.today()
+    
+    logging.debug(f'Today: {today}')
+    
+    invoices = ZohoFullInvoice.objects.filter(Q(force_to_sync=True) | Q(date=today), inserted_in_qb=False)
     
     data_xml = ''
     
@@ -339,6 +344,9 @@ def generate_invoice_add_response():
         customers_unmatched = []
         
         counter_items_with_list_id = 0
+        
+        invoices[i].last_sync_date = today
+        invoices[i].number_of_times_synced += 1
         
         for item in invoices[i].line_items:
             
@@ -380,21 +388,21 @@ def generate_invoice_add_response():
                                     </InvoiceLineAdd>
                                     '''
                     else:
-                        logger.debug(f'Item {zoho_item} has a QB List ID that is not valid')
+                        logger.debug(f'Item {zoho_item} has a QB List ID that is not valid (Proceed to match)')
                         # Creando el listado de customer unmatched
                         info_item_unmatched = {
                             'zoho_item_id': zoho_item.item_id,
                             'zoho_item_unmatched': zoho_item.name,
-                            'reason': 'Item QB List ID is not valid'
+                            'reason': 'Item QB List ID is not valid (Proceed to match)'
                         }
                         items_unmatched.append(info_item_unmatched)
                 else:
-                    logger.debug(f'Item {zoho_item} has no QB List ID')
+                    logger.debug(f'Item {zoho_item} has no QB List ID (Proceed to match)')
                     # Creando el listado de customer unmatched
                     info_item_unmatched = {
                         'zoho_item_id': zoho_item.item_id,
                         'zoho_item_unmatched': zoho_item.name,
-                        'reason': 'Item has no QB List ID'
+                        'reason': 'Item has no QB List ID (Proceed to match)'
                     }
                     items_unmatched.append(info_item_unmatched)
             else:
@@ -468,11 +476,11 @@ def generate_invoice_add_response():
                     invoices[i].inserted_in_qb = True
                     invoices[i].save() 
             else:
-                logger.debug(f'Customer {zoho_customer} has no QB List ID')
+                logger.debug(f'Customer {zoho_customer} has no QB List ID (Proceed to match)')
                 customer_unmatched = {
                     'zoho_customer_id': zoho_customer.contact_id,
                     'zoho_customer_unmatched': zoho_customer.customer_name,
-                    'reason': 'Customer is not matched in QuickBooks'
+                    'reason': 'Customer is not matched in QuickBooks (Proceed to match)'
                 }
                 customers_unmatched.append(customer_unmatched)
                 invoices[i].customer_unmatched = customers_unmatched

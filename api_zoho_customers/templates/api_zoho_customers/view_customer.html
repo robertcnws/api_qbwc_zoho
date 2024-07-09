@@ -51,7 +51,9 @@
                                             <td>{{ coincidence.phone }}</td>
                                             <td>{{ coincidence.coincidence_phone }}</td>
                                             <td>{{ coincidence.company_name }}</td>
-                                            <td><button class="btn btn-info btn-sm" onclick="matchRow(this, '{{ customer.contact_id }}', '{{ coincidence.qb_customer_list_id }}')">Match</button></td>
+                                            <td class="text-center align-middle">
+                                                <button class="btn btn-info btn-sm" onclick="matchRow(this, '{{ customer.contact_id }}', '{{ coincidence.qb_customer_list_id }}')">Match</button>
+                                            </td>
                                         </tr>
                                     {% endfor %}
                                 </tbody>

@@ -18,6 +18,15 @@ logger = logging.getLogger(__name__)
 
 
 @login_required(login_url='login')
+def view_invoice(request, invoice_id):
+    zoho_invoice = ZohoFullInvoice.objects.get(id=invoice_id)
+    context = {
+        'invoice': zoho_invoice
+    }
+    return render(request, 'api_zoho_invoices/view_invoice.html', context)
+
+
+@login_required(login_url='login')
 def list_invoices(request):
     invoice_list_query = ZohoFullInvoice.objects.all()
     batch_size = 200  # Ajusta este tamaño según tus necesidades
@@ -37,8 +46,8 @@ def load_invoices(request):
     app_config = AppConfig.objects.first()
     headers = api_zoho_views.config_headers(request)
     invoices_saved = list(ZohoFullInvoice.objects.all())
-    # today = dt.date.today().strftime('%Y-%m-%d')
-    today = '2024-06-28'
+    today = dt.date.today().strftime('%Y-%m-%d')
+    # today = '2024-06-28'
     params = {
         'organization_id': app_config.zoho_org_id,  # ID de la organización en Zoho Books
         'page': 1,       # Página inicial
@@ -161,7 +170,10 @@ def create_invoice_instance(data):
             contact=data.get('contact', {}),
             inserted_in_qb=data.get('inserted_in_qb', False),
             items_unmatched=data.get('items_unmatched', []),
-            customer_unmatched=data.get('customer_unmatched', [])
+            customer_unmatched=data.get('customer_unmatched', []),
+            force_to_sync=data.get('force_to_sync', False),
+            last_sync_date=parse_date(data.get('last_sync_date')),
+            number_of_times_synced=data.get('number_of_times_synced', 0)
         )
     except Exception as e:
         logger.error(f"Error creating instance: {e}")

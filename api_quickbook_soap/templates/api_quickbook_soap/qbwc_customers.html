@@ -7,7 +7,7 @@
             <h1>QBWC Customers</h1>
         </div>
         <div class="col-4 d-flex justify-content-end align-items-center">
-            <a href="#" class="btn btn-info mr-2" onclick="neverMatchCustomers(this)">Never Match Selected</a>
+            <a href="#" class="btn btn-primary btn-sm" onclick="neverMatchCustomers(this)">Never Match Selected</a>
         </div>
     </div>
 
@@ -41,7 +41,7 @@
                                 <td>{{ customer.email }}</td>
                                 <td>{{ customer.phone }}</td>
                                 <td>{{ customer.list_id }}</td>
-                                <td>
+                                <td class="text-center align-middle">
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" value="" id="{{ customer.list_id }}">
                                         <label class="form-check-label" for="{{ customer.list_id }}">

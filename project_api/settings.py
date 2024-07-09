@@ -54,6 +54,12 @@ ZOHO_URL_READ_ITEMS = env('ZOHO_URL_READ_ITEMS')
 ZOHO_TOKEN_URL = env('ZOHO_TOKEN_URL')
 ZOHO_AUTH_URL = env('ZOHO_AUTH_URL')
 SALES_TAX_LIST_ID = env('SALES_TAX_LIST_ID')
+DB_NAME = env('DB_NAME')
+DB_USER = env('DB_USER')
+DB_PASSWORD = env('DB_PASSWORD')
+DB_HOST = env('DB_HOST')
+DB_PORT = env('DB_PORT')
+DB_ENGINE = env('DB_ENGINE')
 
 CSRF_TRUSTED_ORIGINS = [
     'https://127.0.0.1',
@@ -125,12 +131,12 @@ WSGI_APPLICATION = 'project_api.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'api_qbwc_zoho_db',
-        'USER': 'postgres',
-        'PASSWORD': 'postgres',
-        'HOST': 'postgres',
-        'PORT': '5432',
+        'ENGINE': f'{DB_ENGINE}',
+        'NAME': f'{DB_NAME}',
+        'USER': f'{DB_USER}',
+        'PASSWORD': f'{DB_PASSWORD}',
+        'HOST': f'{DB_HOST}',
+        'PORT': f'{DB_PORT}',
     }
 }
 

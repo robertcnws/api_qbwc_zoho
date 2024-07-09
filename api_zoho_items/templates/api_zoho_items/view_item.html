@@ -35,7 +35,9 @@
                                     <tr>
                                         <td>{{ coincidence.qb_item_name }}</td>
                                         <td>{{ coincidence.coincidence_name }}</td>
-                                        <td><button class="btn btn-info btn-sm" onclick="matchRow(this, '{{ item.item_id }}', '{{ coincidence.qb_item_list_id }}')">Match</button></td>
+                                        <td class="text-center align-middle">
+                                            <button class="btn btn-info btn-sm" onclick="matchRow(this, '{{ item.item_id }}', '{{ coincidence.qb_item_list_id }}')">Match</button>
+                                        </td>
                                     </tr>
                                 {% endfor %}
                             </tbody>
@@ -52,12 +54,14 @@
             No item found.
         </div>
     {% endif %}
-    <a class="btn btn-success btn-sm" href="{% url 'api_zoho_items:list_items' %}">Back to list</a>
+    {% comment %} <a class="btn btn-success btn-sm" href="{% url 'api_zoho_items:list_items' %}">Back to list</a> {% endcomment %}
+    <a class="btn btn-success btn-sm" href="#" onclick="backToList()">Back to list</a>
 
 {% endblock %}
 
 {% block scripts %}
 <script>
+
     function matchRow(button, item_id, qb_item_list_id) {
         button.disabled = true;
         button.innerHTML = 'Matching...';
@@ -122,20 +126,6 @@
         });
         
     }
-
-    function getCookie(name) {
-        var cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            var cookies = document.cookie.split(';');
-            for (var i = 0; i < cookies.length; i++) {
-                var cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
+    
 </script>
 {% endblock %}
