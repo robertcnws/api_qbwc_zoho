@@ -172,7 +172,7 @@ def zoho_api_connect(request):
     app_config = AppConfig.objects.first()
     if app_config.zoho_connection_configured:
         try:
-            access_token = get_access_token(
+            get_access_token(
                 app_config.zoho_client_id,
                 app_config.zoho_client_secret,
                 app_config.zoho_refresh_token,
@@ -244,4 +244,4 @@ def application_settings(request):
     context = {
         'form': form,  # Cambia app_config a form para pasar el formulario al template
     }
-    return render(request, 'api_zoho/application_settings.html', context=context)
+    return render(request, 'api_zoho/application_settings.html', context)

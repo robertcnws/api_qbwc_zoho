@@ -23,14 +23,16 @@ class AppConfigForm(forms.ModelForm):
             'qb_username',
             'qb_password',
         ]
+        
         widgets = {
             'zoho_client_id': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Zoho Client ID'}),
             'zoho_redirect_uri': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Zoho Redirect URI'}),
             'zoho_org_id': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Zoho Organization ID'}),
-            'qb_username': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'QB Username'}), # 'type': 'password
-            'zoho_client_secret': forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Zoho Client Secret'}),
-            'qb_password': forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'QB Password'}),
-        }   
+            'qb_username': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'QB Username'}),
+            'zoho_client_secret': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Zoho Client Secret'}),
+            'qb_password': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'QB Password'}),
+        } 
+          
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['zoho_client_secret'].required = True

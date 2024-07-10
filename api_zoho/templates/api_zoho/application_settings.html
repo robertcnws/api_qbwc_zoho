@@ -36,7 +36,7 @@
 {% endblock %}
         
 {% block content %}
-        <div class="container-fluid mt-5 shadow p-3 mb-5 bg-white rounded" style="width:60%">
+        <div class="container-fluid mt-5 shadow p-3 mb-5 bg-white rounded" style="width:80%">
             <div class="row">
                 <div class="col-md-12 text-center">
                     <h1 class="mb-4">Settings</h1>
@@ -111,14 +111,14 @@
 
             $(document).ready(function() {
                 $('#toggle_client_secret').click(function() {
-                    const passwordField = $('#zoho_client_secret');
+                    const passwordField = $('#id_zoho_client_secret');
                     const type = passwordField.attr('type') === 'password' ? 'text' : 'password';
                     passwordField.attr('type', type);
                     $(this).toggleClass('fa-eye fa-eye-slash');
                 });
 
                 $('#toggle_qb_password').click(function() {
-                    const passwordField = $('#qb_password');
+                    const passwordField = $('#id_qb_password');
                     const type = passwordField.attr('type') === 'password' ? 'text' : 'password';
                     passwordField.attr('type', type);
                     $(this).toggleClass('fa-eye fa-eye-slash');
