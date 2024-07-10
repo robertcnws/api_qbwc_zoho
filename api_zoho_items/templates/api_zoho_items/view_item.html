@@ -2,6 +2,8 @@
 
 {% block content %}
 
+<div class="container-fluid mt-5">
+
     {% if item %}
         <h1 class="mb-4">Item Details</h1>
         <table class="table table-bordered">
@@ -56,6 +58,8 @@
     {% endif %}
     {% comment %} <a class="btn btn-success btn-sm" href="{% url 'api_zoho_items:list_items' %}">Back to list</a> {% endcomment %}
     <a class="btn btn-success btn-sm" href="#" onclick="backToList()">Back to list</a>
+
+</div>
 
 {% endblock %}
 

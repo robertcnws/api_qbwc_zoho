@@ -13,11 +13,12 @@
 
 <div class="container-fluid mt-5"> <!-- Cambiado a container-fluid para ocupar todo el ancho -->
     {% csrf_token %}
-    <div class="row">
-        <div class="col-8">
-            <h1>Similar Items</h1>
+    <div class="row col-12" role="alert">
+        <div class="col-6 d-flex justify-content-between align-items-center mb-3">
+            <h3>Similar Items</h3>
         </div>
-        <div class="col-4 d-flex justify-content-end align-items-center">
+        <div class="col-6" align="right">
+            <a href="#" class="btn btn-success btn-sm" onclick="backToList()">Back to list</a>
             <a href="{% url 'api_quickbook_soap:matched_items' %}" class="btn btn-success btn-sm">Matched Items</a>
         </div>
     </div>

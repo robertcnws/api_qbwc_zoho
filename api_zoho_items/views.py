@@ -143,7 +143,7 @@ def list_items(request):
 
     # Añadir atributo 'matched' a cada item si cumple con la expresión regular
     for item in items_list:
-        item.matched = bool(regex.match(item.qb_list_id))
+        item.matched = bool(regex.match(item.qb_list_id)) if item.qb_list_id else False
         # logger.debug(f"Item {item.item_id} name: {item.name} matched: {item.matched} qb_list_id: {item.qb_list_id}") 
         
     context = {'items': items_list}

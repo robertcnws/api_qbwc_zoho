@@ -11,4 +11,5 @@ urlpatterns = [
     path("settings/", views.zoho_api_settings, name="zoho_api_settings"),
     path("connect/", views.zoho_api_connect, name="zoho_api_connect"),
     path("application_settings/", views.application_settings, name="application_settings"),
+    path("zoho_loading/", views.zoho_loading, name="zoho_loading"),
 ]

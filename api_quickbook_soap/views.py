@@ -605,3 +605,11 @@ def process_qbwc_query_request(xml_data, query_object_name):
     except Exception as e:
         logger.error(f"Error processing request: {e}")
         return soap_service.generate_error_response(str(e))
+    
+
+#############################################
+# View to show loaded data
+#############################################
+
+def qbwc_loading(request):
+    return render(request, 'api_quickbook_soap/qbwc_loading.html')

@@ -7,7 +7,8 @@
         </div>
 
         <div class="container text-end mt-3">
-            <a href="{% url 'api_zoho_invoices:list_invoices' %}" class="btn btn-primary btn-sm">List Invoices</a>
+            <a href="{% url 'api_quickbook_soap:matched_invoices' %}" class="btn btn-primary btn-sm">List Invoices</a>
+            <a href="{% url 'api_zoho:zoho_loading' %}" class="btn btn-info btn-sm">Loading</a>
         </div>
     </div>
 {% endblock %}

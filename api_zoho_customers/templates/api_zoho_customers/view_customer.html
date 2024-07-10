@@ -2,76 +2,80 @@
 
 {% block content %}
 
-    {% if customer %}
-        <h1 class="mb-4">Customer Details</h1>
-        <table class="table table-bordered">
-            <tbody>
-                <tr>
-                    <th scope="row">Zoho Customer Name</th>
-                    <td>{{ customer.contact_name }}</td>
-                </tr>
-                <tr>
-                    <th scope="row">Zoho Customer Email</th>
-                    <td>{{ customer.email }}</td>
-                </tr>
-                <tr>
-                    <th scope="row">Zoho Customer Phone</th>
-                    <td>{{ customer.phone }}</td>
-                </tr>
-                <tr>
-                    <th scope="row">Zoho Company Name</th>
-                    <td>{{ customer.company_name }}</td>
-                </tr>
-                <tr>
-                    <th scope="row">Zoho QB List ID</th>
-                    <td>{{ customer.qb_list_id }}</td>
-                </tr>
-                <tr>
-                    <th scope="row">Coincidences by Order</th>
-                    <td>
-                        {% if coincidences|length > 0%}
-                            <table class="table table-striped table-sm">
-                                <thead class="thead-light">
-                                    <tr>
-                                        <th>QB Customer Name</th>
-                                        <th>Email</th>
-                                        <th>Coincidence Email</th>
-                                        <th>Phone</th>
-                                        <th>Coincidence Phone</th>
-                                        <th>Company Name</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for coincidence in coincidences %}
+    <div class="container-fluid mt-5">
+
+        {% if customer %}
+            <h3 class="mb-4">Customer Details</h3>
+            <table class="table table-bordered">
+                <tbody>
+                    <tr>
+                        <th scope="row">Zoho Customer Name</th>
+                        <td>{{ customer.contact_name }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Zoho Customer Email</th>
+                        <td>{{ customer.email }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Zoho Customer Phone</th>
+                        <td>{{ customer.phone }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Zoho Company Name</th>
+                        <td>{{ customer.company_name }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Zoho QB List ID</th>
+                        <td>{{ customer.qb_list_id }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Coincidences by Order</th>
+                        <td>
+                            {% if coincidences|length > 0%}
+                                <table class="table table-striped table-sm">
+                                    <thead class="thead-light">
                                         <tr>
-                                            <td>{{ coincidence.qb_customer_name }}</td>
-                                            <td>{{ coincidence.email }}</td>
-                                            <td>{{ coincidence.coincidence_email }}</td>
-                                            <td>{{ coincidence.phone }}</td>
-                                            <td>{{ coincidence.coincidence_phone }}</td>
-                                            <td>{{ coincidence.company_name }}</td>
-                                            <td class="text-center align-middle">
-                                                <button class="btn btn-info btn-sm" onclick="matchRow(this, '{{ customer.contact_id }}', '{{ coincidence.qb_customer_list_id }}')">Match</button>
-                                            </td>
+                                            <th>QB Customer Name</th>
+                                            <th>Email</th>
+                                            <th>Coincidence Email</th>
+                                            <th>Phone</th>
+                                            <th>Coincidence Phone</th>
+                                            <th>Company Name</th>
+                                            <th>Action</th>
                                         </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        {% else %}
-                            No coincidences found.
-                        {% endif %}
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    {% else %}
-        <div class="alert alert-warning" role="alert">
-            No customer found.
-        </div>
-    {% endif %}
-    {% comment %} <a class="btn btn-success btn-sm" href="{% url 'api_zoho_customers:list_customers' %}">Back to list</a> {% endcomment %}
-    <a class="btn btn-success btn-sm" href="#" onclick="backToList()">Back to list</a>
+                                    </thead>
+                                    <tbody>
+                                        {% for coincidence in coincidences %}
+                                            <tr>
+                                                <td>{{ coincidence.qb_customer_name }}</td>
+                                                <td>{{ coincidence.email }}</td>
+                                                <td>{{ coincidence.coincidence_email }}</td>
+                                                <td>{{ coincidence.phone }}</td>
+                                                <td>{{ coincidence.coincidence_phone }}</td>
+                                                <td>{{ coincidence.company_name }}</td>
+                                                <td class="text-center align-middle">
+                                                    <button class="btn btn-info btn-sm" onclick="matchRow(this, '{{ customer.contact_id }}', '{{ coincidence.qb_customer_list_id }}')">Match</button>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            {% else %}
+                                No coincidences found.
+                            {% endif %}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        {% else %}
+            <div class="alert alert-warning" role="alert">
+                No customer found.
+            </div>
+        {% endif %}
+        {% comment %} <a class="btn btn-success btn-sm" href="{% url 'api_zoho_customers:list_customers' %}">Back to list</a> {% endcomment %}
+        <a class="btn btn-success btn-sm" href="#" onclick="backToList()">Back to list</a>
+
+    </div>
 
 {% endblock %}
 

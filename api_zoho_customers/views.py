@@ -94,10 +94,11 @@ def view_customer(request, customer_id):
     zoho_email = zoho_customer.email
     zoho_phone = zoho_customer.phone
     dependences_list = []
+    sorted_dependences_list = []
 
     # Comparar clientes usando `rapidfuzz` para comparación de cadenas
         
-    if not zoho_customer.qb_list_id:
+    if not zoho_customer.qb_list_id or zoho_customer.qb_list_id == '':
         for qb_customer_data in qb_customers_data:
             qb_email = qb_customer_data['email']
             qb_phone = qb_customer_data['phone']
@@ -129,9 +130,6 @@ def view_customer(request, customer_id):
                 sorted_dependences_list = sorted(dependences_list, key=lambda x: x['seem_email'], reverse=True)
             else:
                 sorted_dependences_list = []
-    else:
-            # Si ya tiene un `qb_list_id`, no tiene dependencias
-        sorted_dependences_list = []
     
     context = {'customer': zoho_customer, 'coincidences' : sorted_dependences_list}
     

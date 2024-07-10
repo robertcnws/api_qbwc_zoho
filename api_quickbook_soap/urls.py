@@ -22,4 +22,5 @@ urlpatterns = [
     path("matched_items/", views.matched_items, name="matched_items"),
     path("matched_customers/", views.matched_customers, name="matched_customers"),
     path("matched_invoices/", views.matched_invoices, name="matched_invoices"),
+    path("qbwc_loading/", views.qbwc_loading, name="qbwc_loading"),
 ]

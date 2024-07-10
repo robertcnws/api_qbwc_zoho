@@ -245,3 +245,8 @@ def application_settings(request):
         'form': form,  # Cambia app_config a form para pasar el formulario al template
     }
     return render(request, 'api_zoho/application_settings.html', context)
+
+
+@login_required(login_url='login')
+def zoho_loading(request):
+    return render(request, 'api_zoho/zoho_loading.html')    
