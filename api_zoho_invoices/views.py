@@ -44,7 +44,15 @@ def list_invoices(request):
 @login_required(login_url='login')
 def load_invoices(request):
     app_config = AppConfig.objects.first()
-    headers = api_zoho_views.config_headers(request)
+    try:
+        headers = api_zoho_views.config_headers(request)  # Asegúrate de que esto esté configurado correctamente
+    except Exception as e:
+        logger.error(f"Error connecting to Zoho API: {str(e)}")
+        context = {
+            'error': f"Error connecting to Zoho API (Load Invoices): {str(e)}",
+            'status_code': 500
+        }
+        return render(request, 'api_zoho/error.html', context)
     invoices_saved = list(ZohoFullInvoice.objects.all())
     today = dt.date.today().strftime('%Y-%m-%d')
     # today = '2024-06-28'

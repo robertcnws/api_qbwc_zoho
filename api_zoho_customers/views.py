@@ -157,7 +157,15 @@ def  list_customers(request):
 @login_required(login_url='login')
 def load_customers(request):
     app_config = AppConfig.objects.first()
-    headers = api_zoho_views.config_headers(request)  # Asegúrate de que esto esté configurado correctamente
+    try:
+        headers = api_zoho_views.config_headers(request)  # Asegúrate de que esto esté configurado correctamente
+    except Exception as e:
+        logger.error(f"Error connecting to Zoho API: {str(e)}")
+        context = {
+            'error': f"Error connecting to Zoho API (Load Customers): {str(e)}",
+            'status_code': 500
+        }
+        return render(request, 'api_zoho/error.html', context)
     customers_saved = list(ZohoCustomer.objects.all())
 
     params = {

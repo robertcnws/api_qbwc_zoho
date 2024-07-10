@@ -153,7 +153,15 @@ def list_items(request):
 @login_required(login_url='login')  
 def load_items(request):
     app_config = AppConfig.objects.first()
-    headers = api_zoho_views.config_headers(request)
+    try:
+        headers = api_zoho_views.config_headers(request)  # Asegúrate de que esto esté configurado correctamente
+    except Exception as e:
+        logger.error(f"Error connecting to Zoho API: {str(e)}")
+        context = {
+            'error': f"Error connecting to Zoho API (Load Items): {str(e)}",
+            'status_code': 500
+        }
+        return render(request, 'api_zoho/error.html', context)
     items_saved = list(ZohoItem.objects.all())
     
     params = {
