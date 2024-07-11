@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 import api_zoho.views as api_zoho_views
 from django.conf import settings
-from api_zoho.models import AppConfig   
+from api_zoho.models import AppConfig, ZohoLoading 
 from api_zoho_items.models import ZohoItem 
 from django.utils.dateparse import parse_datetime 
 from django.db import transaction
@@ -217,6 +217,14 @@ def load_items(request):
                 ZohoItem.objects.bulk_create(batch)
     
     save_items_in_batches(items_to_save, batch_size=100)
+    
+    if len(items_to_get) > 0:
+        zoho_loading = ZohoLoading.objects.filter(zoho_module='items', zoho_record_created=datetime.now(timezone.utc)).first()
+        if not zoho_loading:
+            zoho_loading = api_zoho_views.create_zoho_loading_instance('items')
+        else:
+            zoho_loading.zoho_record_updated = datetime.now(timezone.utc)
+        zoho_loading.save()
     
     return render(request, 'api_zoho_items/load_items.html')
 

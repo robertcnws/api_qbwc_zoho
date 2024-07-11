@@ -50,3 +50,15 @@ class QbCustomer(models.Model):
 
     def __str__(self):
         return self.name
+    
+
+class QbLoading(models.Model):
+    id = models.AutoField(primary_key=True, blank=True)
+    qb_module = models.CharField(max_length=255, blank=True)
+    qb_record_status = models.CharField(max_length=255, blank=True)
+    qb_record_message = models.TextField(blank=True)
+    qb_record_created = models.DateField(blank=True)
+    qb_record_updated = models.DateTimeField(blank=True)
+
+    def __str__(self):
+        return f"{self.qb_module} - {self.qb_record_updated} - {self.qb_record_status}"

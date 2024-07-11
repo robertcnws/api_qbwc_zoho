@@ -19,16 +19,20 @@
                     </tr>
                     <tr>
                         <td>
-                            <div class="alert alert-warning d-flex align-items-center mb-0" role="alert" style="font-size:small">
-                                <i class="fas fa-exclamation-triangle text-warning me-2"></i>
-                                <p class="mb-0">Last Date loaded: </p>
-                            </div>
+                            {% if qb_loading_customers.qb_record_updated %}
+                                <div class="alert alert-warning d-flex align-items-center mb-0" role="alert" style="font-size:small">
+                                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                                    <p class="mb-0">Last Date loaded: <br/>{{ qb_loading_customers.qb_record_updated|date:"Y-m-d H:i"}}</p>
+                                </div>
+                            {% endif %}
                         </td>
                         <td>
-                            <div class="alert alert-warning d-flex align-items-center mb-0" role="alert" style="font-size:small">
-                                <i class="fas fa-exclamation-triangle text-warning me-2"></i>
-                                <p class="mb-0">Last Date loaded: </p>
-                            </div>
+                            {% if qb_loading_items.qb_record_updated %}
+                                <div class="alert alert-warning d-flex align-items-center mb-0" role="alert" style="font-size:small">
+                                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                                    <p class="mb-0">Last Date loaded: <br/>{{ qb_loading_items.qb_record_updated|date:"Y-m-d H:i"}}</p>
+                                </div>
+                            {% endif %}
                         </td>
                     </tr>
                 </table>

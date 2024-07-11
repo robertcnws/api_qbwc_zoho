@@ -8,7 +8,8 @@ from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from .models import AppConfig
+from datetime import datetime, timezone
+from .models import AppConfig, ZohoLoading
 from .forms import ApiZohoForm, LoginForm, AppConfigForm
 
 #############################################
@@ -249,4 +250,20 @@ def application_settings(request):
 
 @login_required(login_url='login')
 def zoho_loading(request):
-    return render(request, 'api_zoho/zoho_loading.html')    
+    zoho_loading_items = ZohoLoading.objects.filter(zoho_module='items').order_by('-zoho_record_created').first()
+    zoho_loading_invoices = ZohoLoading.objects.filter(zoho_module='invoices').order_by('-zoho_record_created').first()
+    zoho_loading_customers = ZohoLoading.objects.filter(zoho_module='customers').order_by('-zoho_record_created').first()
+    context = {
+        'zoho_loading_items': zoho_loading_items,
+        'zoho_loading_invoices': zoho_loading_invoices,
+        'zoho_loading_customers': zoho_loading_customers
+    }
+    return render(request, 'api_zoho/zoho_loading.html', context)   
+
+
+def create_zoho_loading_instance(module):
+    item = ZohoLoading()
+    item.zoho_module = module
+    item.zoho_record_created = datetime.now(timezone.utc)
+    item.zoho_record_updated = datetime.now(timezone.utc)
+    return item 

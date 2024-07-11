@@ -22,22 +22,28 @@
                     </tr>
                     <tr>
                         <td>
-                            <div class="alert alert-warning d-flex align-items-center mb-0" role="alert" style="font-size:small">
-                                <i class="fas fa-exclamation-triangle text-warning me-2"></i>
-                                <p class="mb-0">Last Date loaded: </p>
-                            </div>
+                            {% if zoho_loading_customers.zoho_record_updated %}
+                                <div class="alert alert-warning d-flex align-items-center mb-0" role="alert" style="font-size:small">
+                                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                                    <p class="mb-0">Last Time loaded: <br/>{{ zoho_loading_customers.zoho_record_updated|date:"Y-m-d H:i"}}</p>
+                                </div>
+                            {% endif %}
                         </td>
                         <td>
-                            <div class="alert alert-warning d-flex align-items-center mb-0" role="alert" style="font-size:small">
-                                <i class="fas fa-exclamation-triangle text-warning me-2"></i>
-                                <p class="mb-0">Last Date loaded: </p>
-                            </div>
+                            {% if zoho_loading_items.zoho_record_updated %}
+                                <div class="alert alert-warning d-flex align-items-center mb-0" role="alert" style="font-size:small">
+                                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                                    <p class="mb-0">Last Time loaded: <br/>{{ zoho_loading_items.zoho_record_updated|date:"Y-m-d H:i"}}</p>
+                                </div>
+                            {% endif %}
                         </td>
                         <td>
-                            <div class="alert alert-warning d-flex align-items-center mb-0" role="alert" style="font-size:small">
-                                <i class="fas fa-exclamation-triangle text-warning me-2"></i>
-                                <p class="mb-0">Last Date loaded: </p>
-                            </div>
+                            {% if zoho_loading_invoices.zoho_record_updated %}
+                                <div class="alert alert-warning d-flex align-items-center mb-0" role="alert" style="font-size:small">
+                                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                                    <p class="mb-0">Last Time loaded: <br/>{{ zoho_loading_invoices.zoho_record_updated|date:"Y-m-d H:i"}}</p>
+                                </div>
+                            {% endif %}
                         </td>
                     </tr>
                 </table>

@@ -40,9 +40,10 @@ environ.Env.read_env()
 # SECRET_KEY = env('SECRET_KEY')
 
 # Configuración adicional, por ejemplo:
-# ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '10.1.10.216'])
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '10.1.10.216', '127.0.0.1'])
 
-ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '10.1.10.216', '127.0.0.1']
 
 # Env Vars
 ZOHO_SCOPE_INVOICES = env('ZOHO_SCOPE_INVOICES')
@@ -66,7 +67,15 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1',
     'https://localhost',
     'http://localhost',
-    'https://tu-dominio.com'
+    'https://tu-dominio.com',
+    'https://10.1.10.216',
+]
+
+CORS_ALLOW_ALL_ORIGINS = True
+
+CORS_ALLOWED_ORIGINS = [
+    "https://127.0.0.1:8000",
+    "https://10.1.10.216:8000",
 ]
 
 CSRF_COOKIE_SECURE = True
@@ -81,6 +90,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'api_zoho',
     'api_zoho_customers',
     'api_zoho_items',
@@ -96,6 +106,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'project_api.urls'

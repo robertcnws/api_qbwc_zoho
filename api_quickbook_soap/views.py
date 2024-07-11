@@ -5,10 +5,11 @@ from django.shortcuts import render, get_object_or_404
 from django.db import transaction, IntegrityError
 from django.db.models import Q, Count
 from django.contrib.auth.decorators import login_required
+from datetime import datetime, timezone
 from api_zoho_customers.models import ZohoCustomer
 from api_zoho_items.models import ZohoItem
 from api_zoho_invoices.models import ZohoFullInvoice
-from .models import QbItem, QbCustomer
+from .models import QbItem, QbCustomer, QbLoading
 import difflib
 import api_quickbook_soap.soap_service as soap_service
 import xmltodict
@@ -476,12 +477,19 @@ def start_qbwc_invoice_add_request(request):
     if request.method == 'POST':
         xml_data = request.body.decode('utf-8')
         response_xml = process_qbwc_invoice_add_request(xml_data)
+        qb_loading = QbLoading.objects.filter(qb_module='invoices', qb_record_created=datetime.now(timezone.utc)).first()
+        if not qb_loading:
+            qb_loading = create_qb_loading_instance('invoices')
+        else:
+            qb_loading.qb_record_updated = datetime.now(timezone.utc)
+        qb_loading.save()
         return HttpResponse(response_xml, content_type='text/xml')
     else:
         return HttpResponse(status=405)
 
 def start_qbwc_query_request(request, query_object_name, list_of_objects):
     if request.method == 'POST':
+        module = ''
         xml_data = request.body.decode('utf-8')
         # logger.debug(f"Received XML data: {xml_data}")
         # if 'ItemSalesTax' in xml_data:
@@ -495,6 +503,7 @@ def start_qbwc_query_request(request, query_object_name, list_of_objects):
                 list_of_objects = [elem for elem in elements_query_rs]
                 print(f"SOAP Elements ({query_object_name}): {list_of_objects}")
                 if query_object_name == 'ItemInventory':
+                    module = 'items'
                     items_saved = QbItem.objects.all()
                     items_to_save = []
                     for item in list_of_objects:
@@ -524,6 +533,7 @@ def start_qbwc_query_request(request, query_object_name, list_of_objects):
                     save_items_in_batches(items_to_save, batch_size=100)
                     
                 elif query_object_name == 'Customer':
+                    module = 'customers'
                     customers_saved = QbCustomer.objects.all()
                     customers_to_save = []
                     for customer in list_of_objects:
@@ -553,6 +563,14 @@ def start_qbwc_query_request(request, query_object_name, list_of_objects):
                                         logger.error(f"Failed to save invoice {customer.list_id}: {e}")
                                 
                     save_customers_in_batches(customers_to_save, batch_size=100)
+                    
+        if module != '':
+            qb_loading = QbLoading.objects.filter(qb_module=module, qb_record_created=datetime.now(timezone.utc)).first()
+            if not qb_loading:
+                qb_loading = create_qb_loading_instance(module)
+            else:
+                qb_loading.qb_record_updated = datetime.now(timezone.utc)
+            qb_loading.save()
                     
         response_xml = process_qbwc_query_request(xml_data, query_object_name)
         return HttpResponse(response_xml, content_type='text/xml')
@@ -612,4 +630,25 @@ def process_qbwc_query_request(xml_data, query_object_name):
 #############################################
 
 def qbwc_loading(request):
-    return render(request, 'api_quickbook_soap/qbwc_loading.html')
+    qb_loading_items = QbLoading.objects.filter(qb_module='items').order_by('-qb_record_created').first()
+    qb_loading_invoices = QbLoading.objects.filter(qb_module='invoices').order_by('-qb_record_created').first()
+    qb_loading_customers = QbLoading.objects.filter(qb_module='customers').order_by('-qb_record_created').first()
+    context = {
+        'qb_loading_items': qb_loading_items,
+        'qb_loading_invoices': qb_loading_invoices,
+        'qb_loading_customers': qb_loading_customers
+    }
+    return render(request, 'api_quickbook_soap/qbwc_loading.html', context)
+
+
+#############################################
+# Create QBWC Loading instance
+#############################################
+
+
+def create_qb_loading_instance(module):
+    item = QbLoading()
+    item.qb_module = module
+    item.qb_record_created = datetime.now(timezone.utc)
+    item.qb_record_updated = datetime.now(timezone.utc)
+    return item 

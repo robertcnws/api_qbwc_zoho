@@ -2,13 +2,14 @@
 {% block content %}
 <div class="container-fluid mt-5">
     {% csrf_token %}
-    <div class="row">
-        <div class="col-8">
-            <h3>QBWC Items</h3>
-        </div>
-        <div class="col-4 d-flex justify-content-end align-items-center">
-            <a href="#" class="btn btn-primary btn-sm" onclick="neverMatchItems(this)">Never Match Selected</a>
-        </div>
+    <div class="row col-12" role="alert">
+            <div class="col-6 d-flex justify-content-between align-items-center mb-3">
+                <h3>QBWC Items</h3>
+            </div>
+            <div class="col-6" align="right">
+                <a href="#" class="btn btn-success btn-sm" onclick="backToList()">Back to QBWC</a>
+                <a href="#" class="btn btn-primary btn-sm" onclick="neverMatchItems(this)">Never Match Selected</a>
+            </div>
     </div>
 
     <div class="row mt-3">

@@ -71,3 +71,14 @@ class LoginUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.username
+    
+class ZohoLoading(models.Model):
+    id = models.AutoField(primary_key=True, blank=True)
+    zoho_module = models.CharField(max_length=255, blank=True)
+    zoho_record_status = models.CharField(max_length=255, blank=True)
+    zoho_record_message = models.TextField(blank=True)
+    zoho_record_created = models.DateField(blank=True)
+    zoho_record_updated = models.DateTimeField(blank=True)
+
+    def __str__(self):
+        return f"{self.zoho_module} - {self.zoho_record_updated} - {self.zoho_record_status}"

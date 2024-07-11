@@ -5,7 +5,7 @@
 <div class="container-fluid mt-5">
 
     {% if item %}
-        <h1 class="mb-4">Item Details</h1>
+        <h3 class="mb-4">Item Details</h3>
         <table class="table table-bordered">
             <tbody>
                 <tr>
@@ -17,8 +17,20 @@
                     <td>{{ item.name }}</td>
                 </tr>
                 <tr>
+                    <th scope="row">Zoho Item SKU</th>
+                    <td>{% if item.sku %}{{ item.sku }}{% else %} -- {% endif %}</td>
+                </tr>
+                <tr>
+                    <th scope="row">Zoho Item Rate</th>
+                    <td>{{ item.rate }}</td>
+                </tr>
+                <tr>
+                    <th scope="row">Zoho Item Status</th>
+                    <td>{{ item.status }}</td>
+                </tr>
+                <tr>
                     <th scope="row">Zoho QB List ID</th>
-                    <td>{{ item.qb_list_id }}</td>
+                    <td>{% if item.qb_list_id %}{{ item.qb_list_id }}{% else %} -- {% endif %}</td>
                 </tr>
                 <tr>
                     <th scope="row">Coincidences by Order</th>

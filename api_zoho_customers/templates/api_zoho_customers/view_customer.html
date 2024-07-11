@@ -9,24 +9,28 @@
             <table class="table table-bordered">
                 <tbody>
                     <tr>
+                        <th scope="row">Zoho Customer ID</th>
+                        <td>{{ customer.contact_id }}</td>
+                    </tr>
+                    <tr>
                         <th scope="row">Zoho Customer Name</th>
                         <td>{{ customer.contact_name }}</td>
                     </tr>
                     <tr>
                         <th scope="row">Zoho Customer Email</th>
-                        <td>{{ customer.email }}</td>
+                        <td>{% if customer.email %}{{ customer.email }}{% else %} -- {% endif %}</td>
                     </tr>
                     <tr>
                         <th scope="row">Zoho Customer Phone</th>
-                        <td>{{ customer.phone }}</td>
+                        <td>{% if customer.phone %}{{ customer.phone }}{% else %} -- {% endif %}</td>
                     </tr>
                     <tr>
                         <th scope="row">Zoho Company Name</th>
-                        <td>{{ customer.company_name }}</td>
+                        <td>{% if customer.company_name %}{{ customer.company_name }}{% else %} -- {% endif %}</td>
                     </tr>
                     <tr>
                         <th scope="row">Zoho QB List ID</th>
-                        <td>{{ customer.qb_list_id }}</td>
+                        <td>{% if customer.qb_list_id %}{{ customer.qb_list_id }}{% else %} -- {% endif %}</td>
                     </tr>
                     <tr>
                         <th scope="row">Coincidences by Order</th>
