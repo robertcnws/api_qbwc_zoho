@@ -71,7 +71,11 @@ CSRF_TRUSTED_ORIGINS = [
     'https://10.1.10.216',
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ORIGIN_ALLOW_ALL = True  # Permitir todas las solicitudes de origen (para desarrollo)
+# o para producción
+# CORS_ORIGIN_WHITELIST = [
+#     'http://localhost:3000',  # React frontend
+# ]
 
 CORS_ALLOWED_ORIGINS = [
     "https://127.0.0.1:8000",
